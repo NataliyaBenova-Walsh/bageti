@@ -28,18 +28,18 @@ This site was originally built for a real bakery, but the business was sold befo
 
 The React + Tailwind client in phase 3 will replace this site, so do the items that carry over first: typos, menu details, contrast and accessibility. Do the layout, performance and font work only if the static site will stay live for a long time.
 
-- [ ] **Responsive layout:** `style.css` has no media queries, so the 4-column grid is squashed on phones. Stack to 1–2 columns under 768px, and make the menu and location cards full-width.
-- [ ] **Broken class:** `class="banana-img small div"` should be `small-div`, so that tile currently misses its styles.
-- [ ] **Menu details:** items have names only. Add short descriptions and prices in EUR (Bulgaria uses the euro since January 2026). Keep them in a JSON file that later seeds the database for the ordering system.
-- [ ] **Typos:** croisants → croissants, Artisian → Artisan, Chockolate → Chocolate, Finansie → Financier, Eincorn → Einkorn, Wholewheet → Wholewheat, "Oatmeal raisins cookies" → "Oatmeal raisin cookies"
-- [ ] **Contrast:** cream text on beige tiles (`#FFF3D9` on `#B29682`) is about 2.5:1, below the WCAG minimum of 4.5:1. Darken the beige or use dark text.
-- [ ] **Accessibility:** images are CSS backgrounds, so they have no alt text. Use `<img alt>` for meaningful photos. Add `aria-label`s to the icon-only social links, and fix the heading order (h2 jumps to h4).
-- [ ] **Anchor links:** the sticky header covers section titles, so add `scroll-margin-top`. Move `scroll-behavior: smooth` from `body` to `html`. Remove the caret-down icons from the nav links, because they look like dropdowns.
-- [ ] **Contact section:** `#contacts` is empty. Merge it with the "Do you have a question?" block into a proper contact section, with a map link for each location.
-- [ ] **Hero:** add a call-to-action button ("See the menu", later "Order now").
-- [ ] **Performance:** images are up to 1 MB as JPG. Convert them to WebP and resize. 4 Google Font families are loaded with every weight; keep 2 families and only the weights used. Add `loading="lazy"` to images below the fold.
-- [ ] **Head and meta:** favicon, meta description, Open Graph tags, and the year in the footer ©
-- [ ] **Opening hours:** "08.00-20.00" → "Mon–Sun 08:00–20:00", or hours per day
+- [x] **Responsive layout:** `style.css` has no media queries, so the 4-column grid is squashed on phones. Stack to 1–2 columns under 768px, and make the menu and location cards full-width.
+- [x] **Broken class:** `class="banana-img small div"` should be `small-div`, so that tile currently misses its styles.
+- [x] **Menu details:** items have names only. Add short descriptions and prices in EUR (Bulgaria uses the euro since January 2026). Keep them in a JSON file that later seeds the database for the ordering system.
+- [x] **Typos:** croisants → croissants, Artisian → Artisan, Chockolate → Chocolate, Finansie → Financier, Eincorn → Einkorn, Wholewheet → Wholewheat, "Oatmeal raisins cookies" → "Oatmeal raisin cookies"
+- [x] **Contrast:** cream text on beige tiles (`#FFF3D9` on `#B29682`) is about 2.5:1, below the WCAG minimum of 4.5:1. Darken the beige or use dark text.
+- [x] **Accessibility:** images are CSS backgrounds, so they have no alt text. Use `<img alt>` for meaningful photos. Add `aria-label`s to the icon-only social links, and fix the heading order (h2 jumps to h4).
+- [x] **Anchor links:** the sticky header covers section titles, so add `scroll-margin-top`. Move `scroll-behavior: smooth` from `body` to `html`. Remove the caret-down icons from the nav links, because they look like dropdowns.
+- [x] **Contact section:** `#contacts` is empty. Merge it with the "Do you have a question?" block into a proper contact section, with a map link for each location. (Map links skipped: the addresses are fictional, so a map would point nowhere.)
+- [x] **Hero:** add a call-to-action button ("See the menu", later "Order now").
+- [x] **Performance:** images are up to 1 MB as JPG. Convert them to WebP and resize. 4 Google Font families are loaded with every weight; keep 2 families and only the weights used. Add `loading="lazy"` to images below the fold.
+- [x] **Head and meta:** favicon, meta description, Open Graph tags, and the year in the footer ©
+- [x] **Opening hours:** "08.00-20.00" → "Mon–Sun 08:00–20:00", or hours per day
 
 ## 3. Full-stack ordering system
 

@@ -5,23 +5,32 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fika Bakery</title>
-    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v6.1.2/css/all.css">    
+    <meta name="description" content="Fika Bakery is a fictional bakery and café in Sofia, with cakes, cookies, sandwiches and artisan bread. A demo website project.">
+    <meta name="theme-color" content="#FFF3D9">
+    <link rel="icon" href="./images/logo.svg" type="image/svg+xml">
+
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Fika Bakery">
+    <meta property="og:description" content="A fictional bakery and café in Sofia, with cakes, cookies, sandwiches and artisan bread.">
+    <meta property="og:url" content="https://nataliyabenova-walsh.github.io/bageti/">
+    <meta property="og:image" content="https://nataliyabenova-walsh.github.io/bageti/docs/screenshot.png">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fira+Sans+Condensed:ital,wght@0,400;0,700;1,400&family=Kalam:wght@700&display=swap">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v6.1.2/css/all.css">
     <link rel="stylesheet" href="./css/reset.css">
     <link rel="stylesheet" href="./css/style.css">
 </head>
 <body>
     <header>
-      
        <nav class="top-nav">
-       
         <ul class="top-nav-list">
-            <li class="top-nav-item"><a href="#locations">Locations <i class="fa-solid fa-caret-down"></i></a></li>
+            <li class="top-nav-item"><a href="#locations">Locations</a></li>
             <li class="top-nav-item">
-                <div class="logo-container">
-                    <a href="./" aria-label="Fika Bakery home"><div class="logo-img-container"></div></a>
-                </div>
+                <a href="./" class="logo-link" aria-label="Fika Bakery home"><img class="logo-img" src="./images/logo.svg" alt="" width="100" height="100"></a>
             </li>
-            <li class="top-nav-item"><a href="#menu">Our Menu <i class="fa-solid fa-caret-down"></i></a></li>
+            <li class="top-nav-item"><a href="#menu">Our Menu</a></li>
         </ul>
        </nav>
     </header>
@@ -30,230 +39,308 @@
         <div class="main-container">
             <div class="first">
                 <div class="first-text">
-                   
-                <h2 class="first-title">Welcome to FIKA BAKERY</h2>
-                <h3 class="first-subtitle">Freshly made for you</h3>
+                    <h1 class="first-title">Welcome to Fika Bakery</h1>
+                    <p class="first-subtitle">Freshly made for you</p>
+                    <a class="btn" href="#menu">See the menu</a>
                 </div>
-                
-            </div>
-            <div class="sandwiches-text small-div">
-                <h2 class="sandwiches-title">Sandwiches, croisants and pies</h2>
-                <p><a href="#savory-treats"><i class="fa-solid fa-caret-down"></i></a></p>
-            </div>
-            <div class="sandwiches-img small-div">
             </div>
 
-            
+            <div class="sandwiches-text small-div">
+                <h2 class="sandwiches-title">Sandwiches, croissants and pies</h2>
+                <a href="#savory-treats" aria-label="See sandwiches, quiches and pies"><i class="fa-solid fa-caret-down" aria-hidden="true"></i></a>
+            </div>
+            <img class="sandwiches-img tile-img" src="./images/tile-croissant.webp" alt="Croissant and a flat white on a café table">
+
             <div class="cookies-text small-div">
                 <h2 class="cookies-title">Freshly baked cookies</h2>
-                <a href="#sweet-treats"><i class="fa-solid fa-caret-down"></i></a>
+                <a href="#sweet-treats" aria-label="See sweet treats"><i class="fa-solid fa-caret-down" aria-hidden="true"></i></a>
             </div>
-            <div class="cookies-img small-div">
-            </div>
+            <img class="cookies-img tile-img" src="./images/tile-cookies.webp" alt="Glass jar of oatmeal raisin cookies">
 
-            
             <div class="cakes-text small-div">
                 <h2 class="cakes-title">Tasty cakes</h2>
-                <a href="#cakes"><i class="fa-solid fa-caret-down"></i></a>
+                <a href="#cakes" aria-label="See cakes and tarts"><i class="fa-solid fa-caret-down" aria-hidden="true"></i></a>
             </div>
-            <div class="cakes-img small-div">
-            </div>
+            <img class="cakes-img tile-img" src="./images/tile-cake.webp" alt="Almond and carrot cake cut into slices">
 
-            <div class="coffee-img small-div">
-
-            </div>
-            <div class="banana-img small div">
-    
-            </div>
-
-            <div class="bread-img small-div">
-
-            </div>
+            <img class="coffee-img tile-img" src="./images/tile-tart-coffee.webp" alt="Apple tart with a cup of coffee">
+            <img class="banana-img tile-img" src="./images/tile-muffins.webp" alt="Chocolate chip muffins on a plate">
+            <img class="bread-img tile-img" src="./images/tile-baguettes.webp" alt="Two baguettes in a linen cloth">
 
             <div class="bread-text small-div">
-                <h2 class="cookies-title">Artisian breads</h2>
-                <a href="#breads"><i class="fa-solid fa-caret-down"></i></a>
+                <h2 class="bread-title">Artisan breads</h2>
+                <a href="#breads" aria-label="See breads"><i class="fa-solid fa-caret-down" aria-hidden="true"></i></a>
             </div>
-
-
-        
-
-        <div class="third">
-           <h2>Do you have a question?</h2>
-           <p>Don't hesitate to contact us:</p>
-           <p><i class="fa-solid fa-envelope"></i><a href="mailto:hello@example.com"> hello@example.com</a></p>
-           <p><i class="fa-solid fa-phone"></i>+359 00 000 0000</p>
         </div>
-
-    </div> 
 
     <section id="menu">
         <h2 class="menu-title">Our Menu</h2>
         <section id="cakes" class="menu-section">
-            <div class="menu-container menu-cakes-img-container"></div>
-            <div class="menu-container menu-cakes-info">
-                <ul class="menu-list">
-                    <li>
-                        <h4>Almond Cake</h4>
-                        
+            <div class="menu-container menu-img-wrap">
+                <img class="menu-img" src="./images/menu-tarts.webp" alt="Strawberry and blueberry tarts" loading="lazy">
+            </div>
+            <div class="menu-container menu-info">
+                <h3 class="menu-category">Cakes and Tarts</h3>
+                <ul class="menu-list" role="list">
+                    <li class="menu-item">
+                        <div class="menu-item-header">
+                            <h4>Almond Cake</h4>
+                            <span class="menu-price">€4.50</span>
+                        </div>
+                        <p class="menu-desc">Moist almond sponge with toasted flaked almonds</p>
                     </li>
-                    <li>
-                        <h4>Carrot Cake</h4>
-                        
+                    <li class="menu-item">
+                        <div class="menu-item-header">
+                            <h4>Carrot Cake</h4>
+                            <span class="menu-price">€4.50</span>
+                        </div>
+                        <p class="menu-desc">Spiced carrot sponge with cream cheese frosting</p>
                     </li>
-                    <li>
-                        <h4>Nutella Biscuit Cake</h4>
-                        
+                    <li class="menu-item">
+                        <div class="menu-item-header">
+                            <h4>Nutella Biscuit Cake</h4>
+                            <span class="menu-price">€4.80</span>
+                        </div>
+                        <p class="menu-desc">No-bake layers of biscuit and Nutella cream</p>
                     </li>
-                    <li>
-                        <h4>Chocolate Tart</h4>
-                        
+                    <li class="menu-item">
+                        <div class="menu-item-header">
+                            <h4>Chocolate Tart</h4>
+                            <span class="menu-price">€4.80</span>
+                        </div>
+                        <p class="menu-desc">Dark chocolate ganache in a crisp pastry shell</p>
                     </li>
-                    <li>
-                        <h4>Raspberry Tart</h4>
-                        
+                    <li class="menu-item">
+                        <div class="menu-item-header">
+                            <h4>Raspberry Tart</h4>
+                            <span class="menu-price">€4.80</span>
+                        </div>
+                        <p class="menu-desc">Vanilla custard topped with fresh raspberries</p>
                     </li>
-                    <li>
-                        <h4>Lemon Tart</h4>
-                
+                    <li class="menu-item">
+                        <div class="menu-item-header">
+                            <h4>Lemon Tart</h4>
+                            <span class="menu-price">€4.50</span>
+                        </div>
+                        <p class="menu-desc">Tangy lemon curd in buttery shortcrust</p>
                     </li>
-                    <li>
-                        <h4>Strawberry Tartlet</h4>
-                
+                    <li class="menu-item">
+                        <div class="menu-item-header">
+                            <h4>Strawberry Tartlet</h4>
+                            <span class="menu-price">€3.20</span>
+                        </div>
+                        <p class="menu-desc">Mini tart with pastry cream and strawberries</p>
                     </li>
-                    <li>
-                        <h4>Chocolate Hazelnut Tartlet</h4>
-                
+                    <li class="menu-item">
+                        <div class="menu-item-header">
+                            <h4>Chocolate Hazelnut Tartlet</h4>
+                            <span class="menu-price">€3.20</span>
+                        </div>
+                        <p class="menu-desc">Mini tart with milk chocolate and roasted hazelnuts</p>
                     </li>
                 </ul>
             </div>
         </section>
 
         <section id="sweet-treats" class="menu-section">
-            
-            <div class="menu-container menu-sweet-treats-info">
-                <ul class="menu-list">
-                    <li>
-                        <h4>Brownie</h4>
-                        
+            <div class="menu-container menu-info">
+                <h3 class="menu-category">Sweet Treats</h3>
+                <ul class="menu-list" role="list">
+                    <li class="menu-item">
+                        <div class="menu-item-header">
+                            <h4>Brownie</h4>
+                            <span class="menu-price">€2.80</span>
+                        </div>
+                        <p class="menu-desc">Fudgy dark chocolate brownie</p>
                     </li>
-                    <li>
-                        <h4>Chockolate Chip Cookie</h4>
-                        
+                    <li class="menu-item">
+                        <div class="menu-item-header">
+                            <h4>Chocolate Chip Cookie</h4>
+                            <span class="menu-price">€2.00</span>
+                        </div>
+                        <p class="menu-desc">Chewy cookie with dark chocolate chunks</p>
                     </li>
-                    <li>
-                        <h4>Finansie</h4>
-                        
+                    <li class="menu-item">
+                        <div class="menu-item-header">
+                            <h4>Financier</h4>
+                            <span class="menu-price">€1.80</span>
+                        </div>
+                        <p class="menu-desc">Small French almond cake made with brown butter</p>
                     </li>
-                    <li>
-                        <h4>Croisant</h4>
-                        
+                    <li class="menu-item">
+                        <div class="menu-item-header">
+                            <h4>Croissant</h4>
+                            <span class="menu-price">€2.20</span>
+                        </div>
+                        <p class="menu-desc">All-butter and flaky, baked every morning</p>
                     </li>
-                    <li>
-                        <h4>Cinnamon Bun</h4>
-                        
+                    <li class="menu-item">
+                        <div class="menu-item-header">
+                            <h4>Cinnamon Bun</h4>
+                            <span class="menu-price">€2.50</span>
+                        </div>
+                        <p class="menu-desc">Swedish-style bun with cinnamon and cardamom</p>
                     </li>
-                    <li>
-                        <h4>Oatmeal raisins cookies</h4>
-                        
+                    <li class="menu-item">
+                        <div class="menu-item-header">
+                            <h4>Oatmeal Raisin Cookie</h4>
+                            <span class="menu-price">€2.00</span>
+                        </div>
+                        <p class="menu-desc">Chewy oat cookie with plump raisins</p>
                     </li>
-                    <li>
-                        <h4>Ginger honey cookies</h4>
-                        
+                    <li class="menu-item">
+                        <div class="menu-item-header">
+                            <h4>Ginger Honey Cookie</h4>
+                            <span class="menu-price">€1.80</span>
+                        </div>
+                        <p class="menu-desc">Soft honey cookie with ginger and warm spices</p>
                     </li>
-                    <li>
-                        <h4>Mini Pavlova</h4>
-                        
+                    <li class="menu-item">
+                        <div class="menu-item-header">
+                            <h4>Mini Pavlova</h4>
+                            <span class="menu-price">€3.50</span>
+                        </div>
+                        <p class="menu-desc">Crisp meringue with whipped cream and berries</p>
                     </li>
                 </ul>
             </div>
-
-            <div class="menu-container menu-sweet-treats-img-container"></div>
+            <div class="menu-container menu-img-wrap">
+                <img class="menu-img" src="./images/menu-brownies.webp" alt="Stack of chocolate brownies" loading="lazy">
+            </div>
         </section>
 
         <section id="savory-treats" class="menu-section">
-            <div class="menu-container menu-savory-treats-img-container"></div>
-            
-            <div class="menu-container menu-savory-treats-info">
-                <ul class="menu-list">
-                    <li>
-                        <h4>Salmon Sandwich</h4>
-                        
+            <div class="menu-container menu-img-wrap">
+                <img class="menu-img" src="./images/menu-salmon-sandwich.webp" alt="Smoked salmon sandwich on dark rye bread" loading="lazy">
+            </div>
+            <div class="menu-container menu-info">
+                <h3 class="menu-category">Sandwiches, Quiches and Pies</h3>
+                <ul class="menu-list" role="list">
+                    <li class="menu-item">
+                        <div class="menu-item-header">
+                            <h4>Salmon Sandwich</h4>
+                            <span class="menu-price">€6.50</span>
+                        </div>
+                        <p class="menu-desc">Smoked salmon, cream cheese and dill on rye</p>
                     </li>
-                    <li>
-                        <h4>Prosciutto Sandwich</h4>
-                        
+                    <li class="menu-item">
+                        <div class="menu-item-header">
+                            <h4>Prosciutto Sandwich</h4>
+                            <span class="menu-price">€6.20</span>
+                        </div>
+                        <p class="menu-desc">Prosciutto, rocket and parmesan on ciabatta</p>
                     </li>
-                    <li>
-                        <h4>Mozzarella Sandwich</h4>
-                        
+                    <li class="menu-item">
+                        <div class="menu-item-header">
+                            <h4>Mozzarella Sandwich</h4>
+                            <span class="menu-price">€5.50</span>
+                        </div>
+                        <p class="menu-desc">Mozzarella, tomato, basil and pesto</p>
                     </li>
-                    <li>
-                        <h4>Salami Sandwich</h4>
-                        
+                    <li class="menu-item">
+                        <div class="menu-item-header">
+                            <h4>Salami Sandwich</h4>
+                            <span class="menu-price">€5.20</span>
+                        </div>
+                        <p class="menu-desc">Salami, pickles and butter on baguette</p>
                     </li>
-                    <li>
-                        <h4>Cheddar Spinach Muffin</h4>
-                        
+                    <li class="menu-item">
+                        <div class="menu-item-header">
+                            <h4>Cheddar Spinach Muffin</h4>
+                            <span class="menu-price">€2.80</span>
+                        </div>
+                        <p class="menu-desc">Savoury muffin with mature cheddar and spinach</p>
                     </li>
-                    <li>
-                        <h4>Goat cheese and walnuts quiche </h4>
-                        
+                    <li class="menu-item">
+                        <div class="menu-item-header">
+                            <h4>Goat Cheese and Walnut Quiche</h4>
+                            <span class="menu-price">€4.50</span>
+                        </div>
+                        <p class="menu-desc">Creamy goat cheese with toasted walnuts</p>
                     </li>
-                    <li>
-                        <h4>Quiche Lorraine</h4>
-                        
+                    <li class="menu-item">
+                        <div class="menu-item-header">
+                            <h4>Quiche Lorraine</h4>
+                            <span class="menu-price">€4.50</span>
+                        </div>
+                        <p class="menu-desc">Classic quiche with bacon, cream and Gruyère</p>
                     </li>
-                    <li>
-                        <h4>Spinach pie</h4>
-                        
+                    <li class="menu-item">
+                        <div class="menu-item-header">
+                            <h4>Spinach Pie</h4>
+                            <span class="menu-price">€3.50</span>
+                        </div>
+                        <p class="menu-desc">Flaky filo with spinach and white brine cheese</p>
                     </li>
                 </ul>
             </div>
-
-           
         </section>
 
         <section id="breads" class="menu-section">
-            
-            <div class="menu-container menu-breads-info">
-                <ul class="menu-list">
-                    <li>
-                        <h4>Eincorn Bread</h4>
-                        
+            <div class="menu-container menu-info">
+                <h3 class="menu-category">Breads</h3>
+                <ul class="menu-list" role="list">
+                    <li class="menu-item">
+                        <div class="menu-item-header">
+                            <h4>Einkorn Bread</h4>
+                            <span class="menu-price">€4.80</span>
+                        </div>
+                        <p class="menu-desc">Ancient-grain loaf with a nutty flavour</p>
                     </li>
-                    <li>
-                        <h4>Rye Bread</h4>
-                        
+                    <li class="menu-item">
+                        <div class="menu-item-header">
+                            <h4>Rye Bread</h4>
+                            <span class="menu-price">€4.20</span>
+                        </div>
+                        <p class="menu-desc">Dense, tangy sourdough rye</p>
                     </li>
-                    <li>
-                        <h4>Wholewheet bread</h4>
-                        
+                    <li class="menu-item">
+                        <div class="menu-item-header">
+                            <h4>Wholewheat Bread</h4>
+                            <span class="menu-price">€3.50</span>
+                        </div>
+                        <p class="menu-desc">Everyday loaf made with stone-ground flour</p>
                     </li>
-                    <li>
-                        <h4>Italian Baguette</h4>
-                        
+                    <li class="menu-item">
+                        <div class="menu-item-header">
+                            <h4>Italian Baguette</h4>
+                            <span class="menu-price">€2.20</span>
+                        </div>
+                        <p class="menu-desc">Crisp crust with an open, chewy crumb</p>
                     </li>
-                    <li>
-                        <h4>Milk and Butter Bread</h4>
-                        
+                    <li class="menu-item">
+                        <div class="menu-item-header">
+                            <h4>Milk and Butter Bread</h4>
+                            <span class="menu-price">€3.80</span>
+                        </div>
+                        <p class="menu-desc">Soft, slightly sweet sandwich loaf</p>
                     </li>
-                    <li>
-                        <h4>Ciabatta</h4>
-                        
+                    <li class="menu-item">
+                        <div class="menu-item-header">
+                            <h4>Ciabatta</h4>
+                            <span class="menu-price">€2.50</span>
+                        </div>
+                        <p class="menu-desc">Airy Italian bread made with olive oil</p>
                     </li>
-                    <li>
-                        <h4>Sourdough bread roll</h4>
-                       
+                    <li class="menu-item">
+                        <div class="menu-item-header">
+                            <h4>Sourdough Bread Roll</h4>
+                            <span class="menu-price">€1.00</span>
+                        </div>
+                        <p class="menu-desc">Small, naturally leavened roll</p>
                     </li>
-                    <li>
-                        <h4>Walnut bread</h4>
-                        
+                    <li class="menu-item">
+                        <div class="menu-item-header">
+                            <h4>Walnut Bread</h4>
+                            <span class="menu-price">€4.90</span>
+                        </div>
+                        <p class="menu-desc">Sourdough loaf packed with toasted walnuts</p>
                     </li>
                 </ul>
             </div>
-
-            <div class="menu-container menu-breads-img-container"></div>
+            <div class="menu-container menu-img-wrap">
+                <img class="menu-img" src="./images/menu-sourdough.webp" alt="Sourdough loaves on bakery shelves" loading="lazy">
+            </div>
         </section>
     </section>
 
@@ -262,41 +349,43 @@
         <div class="locations-container">
 
         <div class="locations-card">
-            <h3 class="locations-title">FIKA Old Town</h3>
-            <div class="locations-img-container img-old-town"></div>
-            <p class="locations-info"><i class="fa-solid fa-map-location-dot"></i> 12 Linden Street, Sofia, Bulgaria</p>
-            <p class="locations-info"><i class="fa-solid fa-clock"></i> 08.00-20.00</p>
+            <h3 class="locations-title">Fika Old Town</h3>
+            <img class="locations-img" src="./images/location-old-town.webp" alt="Shopfront with a bicycle parked outside" loading="lazy">
+            <p class="locations-info"><i class="fa-solid fa-map-location-dot" aria-hidden="true"></i> 12 Linden Street, Sofia, Bulgaria</p>
+            <p class="locations-info"><i class="fa-solid fa-clock" aria-hidden="true"></i> Mon–Sun 08:00–20:00</p>
         </div>
 
         <div class="locations-card">
-            <h3 class="locations-title">FIKA Riverside</h3>
-            <div class="locations-img-container img-riverside"></div>
-            <p class="locations-info"><i class="fa-solid fa-map-location-dot"></i> 5 Millstone Lane, Sofia, Bulgaria</p>
-            <p class="locations-info"><i class="fa-solid fa-clock"></i> 08.00-20.00</p>
+            <h3 class="locations-title">Fika Riverside</h3>
+            <img class="locations-img" src="./images/location-riverside.webp" alt="Café counter with a pastry display case" loading="lazy">
+            <p class="locations-info"><i class="fa-solid fa-map-location-dot" aria-hidden="true"></i> 5 Millstone Lane, Sofia, Bulgaria</p>
+            <p class="locations-info"><i class="fa-solid fa-clock" aria-hidden="true"></i> Mon–Sun 08:00–20:00</p>
         </div>
 
         <div class="locations-card">
-            <h3 class="locations-title">FIKA Garden</h3>
-            <div class="locations-img-container img-garden"></div>
-            <p class="locations-info"><i class="fa-solid fa-map-location-dot"></i> 27 Orchard Square, Sofia, Bulgaria</p>
-            <p class="locations-info"><i class="fa-solid fa-clock"></i> 08.00-20.00</p>
+            <h3 class="locations-title">Fika Garden</h3>
+            <img class="locations-img" src="./images/location-garden.webp" alt="Baker arranging bread in the shop window" loading="lazy">
+            <p class="locations-info"><i class="fa-solid fa-map-location-dot" aria-hidden="true"></i> 27 Orchard Square, Sofia, Bulgaria</p>
+            <p class="locations-info"><i class="fa-solid fa-clock" aria-hidden="true"></i> Mon–Sun 08:00–20:00</p>
         </div>
     </div>
     </section>
 
-    <section id="contacts">
-
+    <section id="contacts" class="contact">
+        <h2 class="contact-title">Do you have a question?</h2>
+        <p>Don't hesitate to contact us:</p>
+        <p><i class="fa-solid fa-envelope" aria-hidden="true"></i> <a href="mailto:hello@example.com">hello@example.com</a></p>
+        <p><i class="fa-solid fa-phone" aria-hidden="true"></i> <a href="tel:+359000000000">+359 00 000 0000</a></p>
     </section>
     </main>
 
     <footer>
         <div class="footer-info">
-            <h3 class="footer-title">FIKA BAKERY</h3>
-            <p>&copy; All rights reserved</p>
+            <p class="footer-title">Fika Bakery</p>
+            <p>&copy; 2026 All rights reserved</p>
         </div>
 
         <p class="footer-demo">Demo project, not a real shop</p>
-
     </footer>
 </body>
 </html>

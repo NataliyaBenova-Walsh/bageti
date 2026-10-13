@@ -1,0 +1,61 @@
+{
+  "currency": "EUR",
+  "categories": [
+    {
+      "id": "cakes",
+      "name": "Cakes and Tarts",
+      "items": [
+        { "name": "Almond Cake", "description": "Moist almond sponge with toasted flaked almonds", "priceCents": 450 },
+        { "name": "Carrot Cake", "description": "Spiced carrot sponge with cream cheese frosting", "priceCents": 450 },
+        { "name": "Nutella Biscuit Cake", "description": "No-bake layers of biscuit and Nutella cream", "priceCents": 480 },
+        { "name": "Chocolate Tart", "description": "Dark chocolate ganache in a crisp pastry shell", "priceCents": 480 },
+        { "name": "Raspberry Tart", "description": "Vanilla custard topped with fresh raspberries", "priceCents": 480 },
+        { "name": "Lemon Tart", "description": "Tangy lemon curd in buttery shortcrust", "priceCents": 450 },
+        { "name": "Strawberry Tartlet", "description": "Mini tart with pastry cream and strawberries", "priceCents": 320 },
+        { "name": "Chocolate Hazelnut Tartlet", "description": "Mini tart with milk chocolate and roasted hazelnuts", "priceCents": 320 }
+      ]
+    },
+    {
+      "id": "sweet-treats",
+      "name": "Sweet Treats",
+      "items": [
+        { "name": "Brownie", "description": "Fudgy dark chocolate brownie", "priceCents": 280 },
+        { "name": "Chocolate Chip Cookie", "description": "Chewy cookie with dark chocolate chunks", "priceCents": 200 },
+        { "name": "Financier", "description": "Small French almond cake made with brown butter", "priceCents": 180 },
+        { "name": "Croissant", "description": "All-butter and flaky, baked every morning", "priceCents": 220 },
+        { "name": "Cinnamon Bun", "description": "Swedish-style bun with cinnamon and cardamom", "priceCents": 250 },
+        { "name": "Oatmeal Raisin Cookie", "description": "Chewy oat cookie with plump raisins", "priceCents": 200 },
+        { "name": "Ginger Honey Cookie", "description": "Soft honey cookie with ginger and warm spices", "priceCents": 180 },
+        { "name": "Mini Pavlova", "description": "Crisp meringue with whipped cream and berries", "priceCents": 350 }
+      ]
+    },
+    {
+      "id": "savory-treats",
+      "name": "Sandwiches, Quiches and Pies",
+      "items": [
+        { "name": "Salmon Sandwich", "description": "Smoked salmon, cream cheese and dill on rye", "priceCents": 650 },
+        { "name": "Prosciutto Sandwich", "description": "Prosciutto, rocket and parmesan on ciabatta", "priceCents": 620 },
+        { "name": "Mozzarella Sandwich", "description": "Mozzarella, tomato, basil and pesto", "priceCents": 550 },
+        { "name": "Salami Sandwich", "description": "Salami, pickles and butter on baguette", "priceCents": 520 },
+        { "name": "Cheddar Spinach Muffin", "description": "Savoury muffin with mature cheddar and spinach", "priceCents": 280 },
+        { "name": "Goat Cheese and Walnut Quiche", "description": "Creamy goat cheese with toasted walnuts", "priceCents": 450 },
+        { "name": "Quiche Lorraine", "description": "Classic quiche with bacon, cream and Gruyère", "priceCents": 450 },
+        { "name": "Spinach Pie", "description": "Flaky filo with spinach and white brine cheese", "priceCents": 350 }
+      ]
+    },
+    {
+      "id": "breads",
+      "name": "Breads",
+      "items": [
+        { "name": "Einkorn Bread", "description": "Ancient-grain loaf with a nutty flavour", "priceCents": 480 },
+        { "name": "Rye Bread", "description": "Dense, tangy sourdough rye", "priceCents": 420 },
+        { "name": "Wholewheat Bread", "description": "Everyday loaf made with stone-ground flour", "priceCents": 350 },
+        { "name": "Italian Baguette", "description": "Crisp crust with an open, chewy crumb", "priceCents": 220 },
+        { "name": "Milk and Butter Bread", "description": "Soft, slightly sweet sandwich loaf", "priceCents": 380 },
+        { "name": "Ciabatta", "description": "Airy Italian bread made with olive oil", "priceCents": 250 },
+        { "name": "Sourdough Bread Roll", "description": "Small, naturally leavened roll", "priceCents": 100 },
+        { "name": "Walnut Bread", "description": "Sourdough loaf packed with toasted walnuts", "priceCents": 490 }
+      ]
+    }
+  ]
+}

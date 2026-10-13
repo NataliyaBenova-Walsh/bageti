@@ -1,24 +1,32 @@
-@import url('https://fonts.googleapis.com/css2?family=Raleway:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Indie+Flower&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Fira+Sans+Condensed:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Kalam:wght@300;400;700&display=swap');
-
 :root {
     --clr-orange: #b45125;
     --clr-dark-brown: #3F271F;
     --clr-med-brown: #8D2C15;
     --clr-beige: #B29682;
+    --clr-taupe: #7D6252;
     --clr-cream: #FFF3D9;
     --clr-green: #697457;
 }
 
+html {
+    scroll-behavior: smooth;
+}
+
 body {
     font-family: 'Fira Sans Condensed', sans-serif;
-    scroll-behavior: smooth;
 }
 a {
     cursor: pointer;
     text-decoration: none;
+}
+a:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 3px;
+}
+
+/* Keep section titles clear of the sticky header and logo */
+section[id] {
+    scroll-margin-top: 110px;
 }
 
 /*Header*/
@@ -33,26 +41,16 @@ header {
     top: 0;
 }
 
-.logo-container {
-    
+.logo-link {
+    display: block;
+    margin-left: 30px;
 }
 
-.logo-img-container {
+.logo-img {
     width: 100px;
     height: 100px;
-    background-image: url('../images/logo.svg');
-    background-position: center; 
-  background-repeat: no-repeat; 
-  background-size: cover;
-  margin-left: 30px;
-  z-index: 1;
-
 }
 
-.top-nav {
-  
-    
-}
 .top-nav-list {
     display: flex;
     justify-content: space-around;
@@ -69,124 +67,57 @@ header {
     color: var(--clr-orange);
 }
 
-.fa-brands {
-    padding-right: 12px;
-}
+/*Hero and tiles*/
 
 .main-container {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr 1fr; 
-    grid-template-rows: 1fr 1fr 1fr 1fr 1fr; 
-     gap: 0px 0px; 
-    grid-template-areas: 
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    grid-template-areas:
     "first first cakes-img cakes-text"
     "first first cookies-text cookies-img"
     "first first sandwiches-img sandwiches-text"
-    "banana-img coffee-img bread-text bread-img"
-    "third third third third";
+    "banana-img coffee-img bread-text bread-img";
 }
 
 .first {
     grid-area: first;
     background-image: url('../images/hero.webp');
     height: 100vh;
-    background-position: center; 
-  background-repeat: no-repeat; 
-  background-size: cover;
-  display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-
-
-.sandwiches-text {
-    grid-area: sandwiches-text;
-    background-color: var(--clr-beige);
-    color: var(--clr-cream);
-    
-}
- .sandwiches-img {
-    grid-area: sandwiches-img;
-    background-image: url('../images/tile-croissant.webp');
-    background-position: center; 
-  background-repeat: no-repeat; 
-  background-size: cover;
-}
-.cookies-text {
-    grid-area: cookies-text;
-    background-color: var(--clr-green);
-    color: var(--clr-cream);
-}
- .cookies-img {
-    grid-area: cookies-img;
-    background-image: url('../images/tile-cookies.webp');
-    background-position: center; 
-  background-repeat: no-repeat; 
-  background-size: cover;
-}
- .cakes-text {
-    grid-area: cakes-text;
-    background-color: var(--clr-orange);
-    color: var(--clr-cream);
-}
- .cakes-img {
-    grid-area: cakes-img;
-    background-image: url('../images/tile-cake.webp');
-    background-position: center; 
-  background-repeat: no-repeat; 
-  background-size: cover;
-}
-
-.bread-img {
-    grid-area: bread-img;
-    background-image: url('../images/tile-baguettes.webp');
-    background-position: center; 
-    background-repeat: no-repeat; 
+    background-position: center;
+    background-repeat: no-repeat;
     background-size: cover;
-}
-.bread-text {
-    grid-area: bread-text;
-    background-color: var(--clr-med-brown);
-    color: var(--clr-cream);
-}
-
-.coffee-img {
-    grid-area: coffee-img;
-    background-image: url('../images/tile-tart-coffee.webp');
-    background-position: center; 
-    background-repeat: no-repeat; 
-    background-size: cover;
-}
-
-.banana-img {
-    grid-area: banana-img;
-    background-image: url('../images/tile-muffins.webp');
-    background-position: center; 
-    background-repeat: no-repeat; 
-    background-size: cover;
-}
-.third {
-    grid-area: third;
-    background-color: var(--clr-beige);
     display: flex;
-    flex-direction: column;
     justify-content: center;
     align-items: center;
-    color: var(--clr-cream);
-
-}
-.third a {
-    color: var(--clr-cream);
-    cursor: pointer;
-    text-decoration: none;
 }
 
 .first-text {
-    background-color: rgb(255, 243, 217, 0.8);
+    background-color: rgb(255, 243, 217, 0.85);
     color: var(--clr-dark-brown);
-    padding: 24px;
+    padding: 24px 32px;
     text-align: center;
+}
+
+.first-title {
+    font-size: 1.5rem;
+}
+
+.first-subtitle {
+    font-size: 1.1rem;
+    font-weight: bold;
+}
+
+.btn {
+    display: inline-block;
+    margin-top: 16px;
+    padding: 10px 24px;
+    border-radius: 999px;
+    background-color: var(--clr-orange);
+    color: var(--clr-cream);
+    font-weight: bold;
+}
+.btn:hover {
+    background-color: var(--clr-med-brown);
 }
 
 .small-div {
@@ -197,63 +128,123 @@ header {
     align-items: center;
     text-align: center;
     padding: 24px;
+    color: var(--clr-cream);
 }
 
 .small-div a {
-    text-decoration: none;
-    cursor: pointer;
     color: var(--clr-cream);
+}
 
+.tile-img {
+    width: 100%;
+    height: calc(100vh/3);
+    object-fit: cover;
+}
+
+.sandwiches-text {
+    grid-area: sandwiches-text;
+    background-color: var(--clr-taupe);
+}
+.sandwiches-img {
+    grid-area: sandwiches-img;
+}
+.cookies-text {
+    grid-area: cookies-text;
+    background-color: var(--clr-green);
+}
+.cookies-img {
+    grid-area: cookies-img;
+}
+.cakes-text {
+    grid-area: cakes-text;
+    background-color: var(--clr-orange);
+}
+.cakes-img {
+    grid-area: cakes-img;
+}
+.bread-text {
+    grid-area: bread-text;
+    background-color: var(--clr-med-brown);
+}
+.bread-img {
+    grid-area: bread-img;
+}
+.coffee-img {
+    grid-area: coffee-img;
+}
+.banana-img {
+    grid-area: banana-img;
 }
 
 /*#menu*/
+
 #menu {
     background-color: var(--clr-cream);
+    color: var(--clr-dark-brown);
 }
 .menu-title {
     text-align: center;
-    color: #3F271F;
     padding: 24px;
 }
 .menu-section {
     display: flex;
-   
-    font-family: 'Kalam', cursive;
 }
 
 .menu-container {
     width: 50%;
 }
-.menu-cakes-img-container {
-    background-image: url('../images/menu-tarts.webp');
-    background-position: center; 
-    background-repeat: no-repeat; 
-    background-size: cover;
+
+.menu-img-wrap {
+    position: relative;
+}
+.menu-img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 
-.menu-sweet-treats-img-container {
-    background-image: url('../images/menu-brownies.webp');
-    background-position: center; 
-    background-repeat: no-repeat; 
-    background-size: cover;
+.menu-info {
+    padding: 32px 40px;
 }
-.menu-savory-treats-img-container {
-    background-image: url('../images/menu-salmon-sandwich.webp');
-    background-position: center; 
-    background-repeat: no-repeat; 
-    background-size: cover;
-}
-.menu-breads-img-container {
-    background-image: url('../images/menu-sourdough.webp');
-    background-position: center; 
-    background-repeat: no-repeat; 
-    background-size: cover;
+.menu-info > * {
+    max-width: 560px;
 }
 
+.menu-category,
+.menu-item h4 {
+    font-family: 'Kalam', cursive;
+}
 
-.menu-list li {
-    list-style: none;
-    color: var(--clr-dark-brown);
+.menu-category {
+    color: var(--clr-orange);
+    margin-bottom: 12px;
+}
+
+.menu-list {
+    padding: 0;
+    margin: 0;
+}
+
+.menu-item {
+    margin-bottom: 12px;
+}
+
+.menu-item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 16px;
+}
+
+.menu-price {
+    font-weight: bold;
+    white-space: nowrap;
+}
+
+.menu-desc {
+    font-size: 0.95rem;
 }
 
 /*#locations*/
@@ -262,13 +253,12 @@ header {
     background-color: var(--clr-beige);
     min-height: 50vh;
     padding: 24px;
-    
 }
 .locations-container {
     display: flex;
     gap: 24px;
     justify-content: center;
-    align-items: top;
+    align-items: flex-start;
 }
 .locations-card {
     width: 30%;
@@ -279,7 +269,7 @@ header {
 }
 .locations-main-title {
     text-align: center;
-    color: #3F271F;
+    color: var(--clr-dark-brown);
     padding: 24px;
 }
 
@@ -287,33 +277,30 @@ header {
     margin: 24px 0;
 }
 
+.locations-img {
+    width: 100%;
+    height: 250px;
+    object-fit: cover;
+}
+
 .locations-info {
     margin-top: 16px;
 }
 
-.img-old-town {
-    background-image: url('../images/location-old-town.webp');
-    width: 100%;
-    height: 250px;
-    background-position: center; 
-    background-repeat: no-repeat; 
-    background-size: cover;
+/*#contacts*/
+
+.contact {
+    background-color: var(--clr-taupe);
+    color: var(--clr-cream);
+    text-align: center;
+    padding: 48px 24px;
 }
-.img-riverside {
-    background-image: url('../images/location-riverside.webp');
-    width: 100%;
-    height: 250px;
-    background-position: center; 
-    background-repeat: no-repeat; 
-    background-size: cover;
+.contact-title {
+    margin-bottom: 8px;
 }
-.img-garden {
-    background-image: url('../images/location-garden.webp');
-    width: 100%;
-    height: 250px;
-    background-position: center; 
-    background-repeat: no-repeat; 
-    background-size: cover;
+.contact a {
+    color: var(--clr-cream);
+    text-decoration: underline;
 }
 
 /*Footer*/
@@ -339,4 +326,89 @@ footer {
     padding: 24px;
     font-size: 14px;
     font-style: italic;
+}
+
+/*Phones and small tablets*/
+
+@media (max-width: 768px) {
+    header {
+        height: 64px;
+    }
+    .top-nav-list {
+        gap: 8px;
+        padding: 0;
+        margin: 0;
+        align-items: flex-start;
+    }
+    .top-nav-item {
+        margin-left: 0;
+        padding-top: 20px;
+    }
+    .top-nav-item:has(.logo-link) {
+        padding-top: 4px;
+    }
+    .logo-link {
+        margin: 0 16px;
+    }
+    .logo-img {
+        width: 76px;
+        height: 76px;
+    }
+
+    .main-container {
+        grid-template-columns: 1fr 1fr;
+        grid-template-areas:
+        "first first"
+        "cakes-img cakes-text"
+        "cookies-text cookies-img"
+        "sandwiches-img sandwiches-text"
+        "bread-text bread-img"
+        "banana-img coffee-img";
+    }
+    .first {
+        height: 70vh;
+    }
+    .small-div,
+    .tile-img {
+        height: 200px;
+    }
+    .small-div h2 {
+        font-size: 1.2rem;
+    }
+
+    .menu-section {
+        flex-direction: column;
+    }
+    .menu-container {
+        width: 100%;
+    }
+    .menu-img-wrap {
+        height: 220px;
+        order: -1;
+    }
+    .menu-info {
+        padding: 24px 16px;
+    }
+
+    #locations {
+        padding: 24px 16px;
+    }
+    .locations-container {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .locations-card {
+        width: 100%;
+        padding: 0;
+    }
+
+    footer {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+    .footer-info,
+    .footer-demo {
+        padding: 12px 16px;
+    }
 }
