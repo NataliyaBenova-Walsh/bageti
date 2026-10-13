@@ -45,16 +45,30 @@ To run it you need Node.js 22+ and a PostgreSQL database:
 ```bash
 npm install
 cp server/.env.example server/.env   # then add your DATABASE_URL
-npm run db:migrate -w server
+npm run db:migrate -w server        # create the tables
+npm run db:seed -w server           # load the menu from data/menu.json
 npm run dev                          # client on :5173, API on :3001
 ```
+
+Open the app at http://localhost:5173. Port 3001 is the API only, so opening it directly in the browser shows "Cannot GET /". The seed can be run again at any time: it updates existing products instead of adding duplicates.
+
+### API
+
+| Method | Path | Returns |
+| --- | --- | --- |
+| GET | `/api/health` | Server and database status |
+| GET | `/api/categories` | The whole menu: categories in display order, each with its products |
+| GET | `/api/products` | All products. Add `?category=breads` for one category |
+| GET | `/api/products/:id` | One product, or 404 |
+
+Prices are whole cents in EUR (`priceCents: 450` is €4.50).
 
 ## Structure
 
 ```
 index.html     Page markup
 css/           Reset and main stylesheet
-data/          Menu data (menu.json), used later to seed the ordering system's database
+data/          Menu data (menu.json), used to seed the ordering system's database
 images/        Product and location photos
 docs/          README screenshot
 client/        React ordering app

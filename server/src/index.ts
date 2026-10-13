@@ -1,5 +1,6 @@
 import express from 'express'
 import { prisma } from './db.js'
+import { menuRouter } from './routes/menu.js'
 
 const app = express()
 const port = Number(process.env.PORT ?? 3001)
@@ -14,6 +15,8 @@ app.get('/api/health', async (_req, res) => {
     res.status(503).json({ status: 'ok', database: 'unreachable' })
   }
 })
+
+app.use('/api', menuRouter)
 
 app.listen(port, () => {
   console.log(`Server listening on http://localhost:${port}`)
