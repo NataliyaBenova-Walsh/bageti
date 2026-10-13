@@ -40,7 +40,7 @@ header {
 .logo-img-container {
     width: 100px;
     height: 100px;
-    background-image: url('../images/logo-2.jpg');
+    background-image: url('../images/logo.svg');
     background-position: center; 
   background-repeat: no-repeat; 
   background-size: cover;
@@ -291,7 +291,7 @@ header {
     margin-top: 16px;
 }
 
-.img-skobelev {
+.img-old-town {
     background-image: url('../images/bageti-skobelev.jpg');
     width: 100%;
     height: 250px;
@@ -299,7 +299,7 @@ header {
     background-repeat: no-repeat; 
     background-size: cover;
 }
-.img-mkuri {
+.img-riverside {
     background-image: url('../images/counter.jpg');
     width: 100%;
     height: 250px;
@@ -307,7 +307,7 @@ header {
     background-repeat: no-repeat; 
     background-size: cover;
 }
-.img-smirnenski {
+.img-garden {
     background-image: url('../images/smirnenski.jpg');
     width: 100%;
     height: 250px;
@@ -333,16 +333,10 @@ footer {
     font-weight: bold;
 }
 
-.footer-nav {
+.footer-demo {
     display: flex;
-    justify-content: center;
     align-items: center;
-}
-.footer-item {
-    display: inline-block;
-}
-.footer-item a {
-    color: var(--clr-cream);
-    font-size: 24px;
-
+    padding: 24px;
+    font-size: 14px;
+    font-style: italic;
 }

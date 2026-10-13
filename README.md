@@ -1,10 +1,10 @@
-# Bageti Bakery
+# Fika Bakery
 
-A website for Bageti, a bakery and café. It's built with plain, hand-written HTML and CSS, with no frameworks or build step.
+A demo website for Fika, a fictional bakery and café. It's built with plain, hand-written HTML and CSS, with no frameworks or build step.
 
 **[View the live site →](https://nataliyabenova-walsh.github.io/bageti/)**
 
-[![Bageti Bakery homepage](docs/screenshot.png)](https://nataliyabenova-walsh.github.io/bageti/)
+[![Fika Bakery homepage](docs/screenshot.png)](https://nataliyabenova-walsh.github.io/bageti/)
 
 ## Sections
 
@@ -12,7 +12,7 @@ A website for Bageti, a bakery and café. It's built with plain, hand-written HT
 - **Product tiles:** a photo and colour-block grid for cakes, cookies, sandwiches and pies, and breads
 - **Menu:** grouped product listings
 - **Locations:** the bakery's shops
-- **Contact:** email and social links
+- **Contact:** email and phone
 
 ## Built with
 

@@ -10,18 +10,19 @@ The plan for this project:
 
 This site was originally built for a real bakery, but the business was sold before handover. It shouldn't use a real business's identity in a public portfolio.
 
-- [ ] Pick a fictional bakery name, and check it isn't a real bakery in Sofia
-- [ ] Replace the logo (`images/logo-2.jpg` is the real logo) with a new text or SVG logo
-- [ ] Replace the 3 real addresses and location names (NDK, Iztok, UACG) with fictional ones
-- [ ] Replace the Facebook and Instagram links (header and footer) with `#` placeholders, or remove them
-- [ ] Replace the real email and phone number with placeholders (e.g. `hello@example.com`)
-- [ ] Replace the real storefront photos (`bageti-skobelev.jpg`, `smirnenski.jpg`, `counter.jpg`) with free-licence stock photos (Unsplash, Pexels). The product photos (fika, cookies, tart, brownies, etc.) are probably the bakery's own too, so decide whether to replace all of them.
-- [ ] Add a small "Demo project, not a real shop" note in the footer
-- [ ] Update `<title>`, headings, README and screenshot with the new name
+- [x] Pick a fictional bakery name, and check it isn't a real bakery in Sofia (**Fika**)
+- [x] Replace the logo (`images/logo-2.jpg` is the real logo) with a new text or SVG logo
+- [x] Replace the 3 real addresses and location names (NDK, Iztok, UACG) with fictional ones
+- [x] Replace the Facebook and Instagram links (header and footer) with `#` placeholders, or remove them
+- [x] Replace the real email and phone number with placeholders (e.g. `hello@example.com`)
+- [ ] Replace the real storefront photos (`bageti-skobelev.jpg`, `smirnenski.jpg`, `counter.jpg`) with free-licence stock photos (Unsplash, Pexels). The product photos (fika, cookies, tart, brownies, etc.) need replacing too: the hero and cookie photos show "BAGETI" on the packaging.
+- [x] Add a small "Demo project, not a real shop" note in the footer
+- [x] Update `<title>`, headings and README with the new name
+- [ ] Retake the README screenshot (after the photos are replaced)
 - [ ] Rename the GitHub repo (GitHub redirects the old repo URL), then update the links in the profile README and `README.md`. The old Pages URL (`github.io/bageti/`) probably won't redirect, so update every link to it at the same time.
 - [ ] **Git history:** the real logo, email, phone and photos stay in earlier commits even after they're replaced. If that matters, start a fresh repo (or squash history) once this phase is done, rather than renaming.
-- [ ] Delete the 14 unused images: `capuchino.jpg`, `christma-counter.jpg`, `christmas-tea.jpg`, `cinnamon-bun.jpg`, `finansie.jpg`, `ginger-hearts.jpg`, `ginger-men.jpg`, `hot-chocolate.jpg`, `kozunak.jpg`, `kozunak-2.jpg`, `logi.jpg`, `luxa.org-opacity-changed-panoramic-bageti.jpg`, `pavlova.jpg`, `small-cookies.jpg`
-- [ ] Delete `css/index.html`, an empty HTML page that isn't used
+- [x] Delete the 14 unused images: `capuchino.jpg`, `christma-counter.jpg`, `christmas-tea.jpg`, `cinnamon-bun.jpg`, `finansie.jpg`, `ginger-hearts.jpg`, `ginger-men.jpg`, `hot-chocolate.jpg`, `kozunak.jpg`, `kozunak-2.jpg`, `logi.jpg`, `luxa.org-opacity-changed-panoramic-bageti.jpg`, `pavlova.jpg`, `small-cookies.jpg`
+- [x] Delete `css/index.html`, an empty HTML page that isn't used
 
 ## 2. UI and UX improvements
 

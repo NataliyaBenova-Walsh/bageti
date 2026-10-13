@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" role="img" aria-label="Fika Bakery">
+  <circle cx="50" cy="50" r="48" fill="#FFF3D9" stroke="#b45125" stroke-width="3"/>
+  <circle cx="50" cy="50" r="41" fill="none" stroke="#b45125" stroke-width="1"/>
+  <path d="M30 34 q20 -12 40 0" fill="none" stroke="#697457" stroke-width="2.5" stroke-linecap="round"/>
+  <text x="50" y="60" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="26" font-style="italic" font-weight="bold" fill="#3F271F">Fika</text>
+  <text x="50" y="76" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="8" letter-spacing="2.5" fill="#b45125">BAKERY</text>
+</svg>
