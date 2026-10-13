@@ -35,7 +35,7 @@ npx serve .
 
 ## Ordering app (in progress)
 
-A full-stack ordering system is being built alongside the static site:
+A full-stack ordering system is being built alongside the static site. **[View the ordering app →](https://bageti.vercel.app)** (the first visit can take up to a minute while the free server wakes up)
 
 - **`client/`:** React, TypeScript, Vite and Tailwind CSS
 - **`server/`:** Node, Express and TypeScript, with Prisma and PostgreSQL (hosted on [Neon](https://neon.tech))
