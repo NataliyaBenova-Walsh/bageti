@@ -21,6 +21,7 @@ A demo website for Fika, a fictional bakery and café. It's built with plain, ha
 - **Google Fonts** (Raleway, Fira Sans Condensed, Kalam, Indie Flower)
 - **Font Awesome** icons
 - Hosted on **GitHub Pages**
+- Photos from [Pexels](https://www.pexels.com), resized and converted to WebP
 
 ## Run locally
 
