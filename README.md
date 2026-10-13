@@ -33,6 +33,22 @@ No build is needed. Open `index.html` in a browser, or serve the folder:
 npx serve .
 ```
 
+## Ordering app (in progress)
+
+A full-stack ordering system is being built alongside the static site:
+
+- **`client/`:** React, TypeScript, Vite and Tailwind CSS
+- **`server/`:** Node, Express and TypeScript, with Prisma and PostgreSQL (hosted on [Neon](https://neon.tech))
+
+To run it you need Node.js 22+ and a PostgreSQL database:
+
+```bash
+npm install
+cp server/.env.example server/.env   # then add your DATABASE_URL
+npm run db:migrate -w server
+npm run dev                          # client on :5173, API on :3001
+```
+
 ## Structure
 
 ```
@@ -41,4 +57,6 @@ css/           Reset and main stylesheet
 data/          Menu data (menu.json), used later to seed the ordering system's database
 images/        Product and location photos
 docs/          README screenshot
+client/        React ordering app
+server/        Express API and Prisma schema
 ```

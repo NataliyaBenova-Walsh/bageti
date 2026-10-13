@@ -43,7 +43,7 @@ The React + Tailwind client in phase 3 will replace this site, so do the items t
 
 ## 3. Full-stack ordering system
 
-1. [ ] **Setup:** monorepo with `client/` (React + TypeScript + Tailwind) and `server/` (Node + Express + TypeScript; Express is quicker to build than NestJS), PostgreSQL + Prisma, Docker Compose for local development
+1. [x] **Setup:** npm workspaces monorepo with `client/` (React + TypeScript + Vite + Tailwind) and `server/` (Node + Express + TypeScript), PostgreSQL on Neon + Prisma. (Neon is used for development too, instead of Docker Compose, because Docker isn't installed.)
 2. [ ] **Menu from the database:** products and categories API, with the client rendering the menu from the API. Seed it from the phase 2 menu JSON. Store prices as integer cents in EUR. **Deploy at this point** (Vercel + Render or Railway + Neon), with GitHub Actions CI.
 3. [ ] **Cart and orders:** Zustand cart (persisted), checkout with React Hook Form + Zod (pickup location and time), orders saved as "pay at pickup". Pickup rules: only times within opening hours, a minimum lead time, and products staff can mark as sold out.
 4. [ ] **Admin panel:** auth with roles (customer and admin), product management with image upload, order list with status changes (New → Baking → Ready → Picked up). Choose the auth approach first (e.g. Auth.js/Lucia, or JWT in httpOnly cookies). Store uploads in Cloudinary or S3/R2, because Render and Railway erase their local disk on each deploy.

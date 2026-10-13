@@ -1,0 +1,14 @@
+@import "tailwindcss";
+
+@theme {
+  --color-orange: #b45125;
+  --color-dark-brown: #3f271f;
+  --color-med-brown: #8d2c15;
+  --color-beige: #b29682;
+  --color-taupe: #7d6252;
+  --color-cream: #fff3d9;
+  --color-green: #697457;
+
+  --font-sans: "Fira Sans Condensed", sans-serif;
+  --font-hand: "Kalam", cursive;
+}
