@@ -1,0 +1,23 @@
+# Render Blueprint for the API (https://render.com/docs/blueprint-spec).
+# The client is deployed separately on Vercel, and the database is on Neon.
+services:
+  - type: web
+    name: fika-api
+    runtime: node
+    plan: free
+    region: frankfurt
+    buildCommand: npm ci && npm run db:deploy -w server && npm run build -w server
+    startCommand: npm start -w server
+    healthCheckPath: /api/health
+    buildFilter:
+      paths:
+        - server/**
+        - package.json
+        - package-lock.json
+        - render.yaml
+    envVars:
+      # Both are entered in the Render dashboard when the Blueprint is created
+      - key: DATABASE_URL
+        sync: false
+      - key: CLIENT_ORIGIN
+        sync: false

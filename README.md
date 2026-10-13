@@ -63,6 +63,18 @@ Open the app at http://localhost:5173. Port 3001 is the API only, so opening it 
 
 Prices are whole cents in EUR (`priceCents: 450` is €4.50).
 
+### Deployment
+
+| Part | Host | Settings |
+| --- | --- | --- |
+| API (`server/`) | [Render](https://render.com), free plan | `render.yaml` Blueprint. Set `DATABASE_URL` (Neon) and `CLIENT_ORIGIN` (the Vercel address). Migrations run on each deploy. |
+| Client (`client/`) | [Vercel](https://vercel.com) | Root directory `client`. Set `VITE_API_URL` to the Render address. |
+| Database | [Neon](https://neon.tech) | Seed once with `DATABASE_URL=<production URL> npm run db:seed -w server` |
+
+The free Render server sleeps after about 15 minutes without visitors, so the first visit after that can take up to a minute. The client shows "Waking up the server…" while it waits.
+
+GitHub Actions (`.github/workflows/ci.yml`) builds both apps and lints the client on every push and pull request.
+
 ## Structure
 
 ```
@@ -73,4 +85,5 @@ images/        Product and location photos
 docs/          README screenshot
 client/        React ordering app
 server/        Express API and Prisma schema
+render.yaml    Render deployment settings for the API
 ```

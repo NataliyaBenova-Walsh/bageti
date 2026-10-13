@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { getJson } from './api'
 
 type Product = {
   id: number
@@ -16,15 +17,16 @@ const price = new Intl.NumberFormat('en-IE', { style: 'currency', currency: 'EUR
 function App() {
   const [categories, setCategories] = useState<Category[] | null>(null)
   const [error, setError] = useState(false)
+  const [slow, setSlow] = useState(false)
 
   useEffect(() => {
-    fetch('/api/categories')
-      .then((res) => {
-        if (!res.ok) throw new Error(`HTTP ${res.status}`)
-        return res.json() as Promise<Category[]>
-      })
+    // The free Render server sleeps when idle and takes up to a minute to wake
+    const slowTimer = setTimeout(() => setSlow(true), 3000)
+    getJson<Category[]>('/api/categories')
       .then(setCategories)
       .catch(() => setError(true))
+      .finally(() => clearTimeout(slowTimer))
+    return () => clearTimeout(slowTimer)
   }, [])
 
   return (
@@ -38,7 +40,11 @@ function App() {
         <h1 className="mb-8 text-center font-hand text-4xl text-orange">Our Menu</h1>
 
         {error && <p className="text-center">The menu couldn't be loaded. Please try again later.</p>}
-        {!error && !categories && <p className="text-center">Loading the menu…</p>}
+        {!error && !categories && (
+          <p className="text-center" role="status">
+            {slow ? 'Waking up the server, this can take up to a minute…' : 'Loading the menu…'}
+          </p>
+        )}
 
         {categories && (
           <div className="grid gap-10 md:grid-cols-2">
