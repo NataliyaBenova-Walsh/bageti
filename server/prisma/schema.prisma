@@ -92,6 +92,8 @@ model OrderItem {
 
 enum Role {
   CUSTOMER
+  // Can work with orders and mark products sold out, but not change the menu
+  STAFF
   ADMIN
 }
 

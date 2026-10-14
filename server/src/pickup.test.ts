@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict'
-import { test } from 'node:test'
+import { test } from 'vitest'
 import { DAYS_AHEAD, isPickupAllowed, pickupSlots, shopDayRange, shopToday } from './pickup.js'
 
 const hours = { opensAt: '08:00', closesAt: '18:00' }

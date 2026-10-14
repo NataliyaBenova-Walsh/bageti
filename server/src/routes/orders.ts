@@ -31,7 +31,13 @@ function orderCode(): string {
 }
 
 // A public form that writes to the database: slow down anyone sending lots of orders
-const orderLimiter = rateLimit({ windowMs: 15 * 60 * 1000, limit: 10, message: { error: 'Too many orders. Please try again later.' } })
+const orderLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 10,
+  message: { error: 'Too many orders. Please try again later.' },
+  // Off in automated tests, which send many requests from one address
+  skip: () => process.env.NODE_ENV === 'test',
+})
 
 ordersRouter.post('/orders', orderLimiter, async (req, res) => {
   const parsed = orderInput.safeParse(req.body)

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { ApiError, getJson, patchJson } from '../api'
 import { formatDate, formatPrice, formatTime, shopToday } from '../format'
 import type { AdminOrder, Location, OrderStatus } from '../types'
@@ -39,14 +39,20 @@ export function OrdersPage() {
   const [error, setError] = useState<string | null>(null)
   const [busyId, setBusyId] = useState<number | null>(null)
 
+  // Numbers each request, so an older one that answers late (e.g. for the previous day) is ignored
+  const latestRequest = useRef(0)
+
   const load = useCallback(async () => {
     const params = new URLSearchParams({ date })
     if (locationId) params.set('location', locationId)
+    const request = ++latestRequest.current
     try {
-      setOrders(await getJson<AdminOrder[]>(`/api/admin/orders?${params}`))
+      const result = await getJson<AdminOrder[]>(`/api/admin/orders?${params}`)
+      if (request !== latestRequest.current) return
+      setOrders(result)
       setError(null)
     } catch {
-      setError("Orders couldn't be loaded. Retrying…")
+      if (request === latestRequest.current) setError("Orders couldn't be loaded. Retrying…")
     }
   }, [date, locationId])
 

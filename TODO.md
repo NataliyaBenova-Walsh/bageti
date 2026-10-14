@@ -51,4 +51,4 @@ The React + Tailwind client in phase 3 will replace this site, so do the items t
    - [ ] **Product photos:** upload to Cloudinary from the products page, and show photos on the menu
 5. [ ] **Payments:** Stripe Checkout in test mode, plus a webhook that marks orders as paid
 6. [ ] **Realtime and extras:** live order feed for staff (WebSockets or SSE), confirmation email, sales dashboard (Recharts)
-7. [ ] **Quality:** Vitest API tests, a Playwright end-to-end test for the order flow, OpenAPI docs, a README with an architecture diagram and a demo admin login
+7. [x] **Quality:** Vitest API tests, a Playwright end-to-end test for the order flow, OpenAPI docs, a README with an architecture diagram and a demo admin login (Done: Vitest and Supertest API tests on a separate test database, a Playwright test from order to staff, OpenAPI docs at /api/docs with a test that keeps them in sync with the routes, CI with a Postgres service, and a README with an architecture diagram, screenshots and a public demo login with a new staff role.)

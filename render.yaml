@@ -25,6 +25,11 @@ services:
         sync: false
       - key: ADMIN_PASSWORD
         sync: false
+      # The public demo login shown in the README (staff role: orders and sold-out only)
+      - key: DEMO_EMAIL
+        value: demo@example.com
+      - key: DEMO_PASSWORD
+        value: fika-demo
       # Signs login cookies; Render generates a random value
       - key: JWT_SECRET
         generateValue: true

@@ -28,7 +28,7 @@ export type OrderConfirmation = {
 
 export type OrderStatus = 'NEW' | 'PREPARING' | 'READY' | 'PICKED_UP' | 'CANCELLED'
 
-export type User = { id: number; email: string; name: string; role: 'CUSTOMER' | 'ADMIN' }
+export type User = { id: number; email: string; name: string; role: 'CUSTOMER' | 'STAFF' | 'ADMIN' }
 
 export type AdminOrder = {
   id: number

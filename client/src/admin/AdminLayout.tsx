@@ -15,7 +15,7 @@ export function AdminLayout() {
   useEffect(() => {
     getJson<User>('/api/auth/me')
       .then((me) => {
-        if (me.role !== 'ADMIN') throw new Error('Not an admin')
+        if (me.role !== 'ADMIN' && me.role !== 'STAFF') throw new Error('Not staff')
         setUser(me)
       })
       .catch(() => navigate(`/admin/login?next=${encodeURIComponent(location.pathname)}`, { replace: true }))
@@ -42,13 +42,14 @@ export function AdminLayout() {
           <NavLink to="/admin/products" className={navClass}>
             Products
           </NavLink>
+          <span className="px-2 text-sm text-taupe">{user.name}</span>
           <button type="button" onClick={logOut} className="px-3 py-2 text-sm text-med-brown underline">
             Log out
           </button>
         </nav>
       </header>
       <main className="mx-auto max-w-6xl px-4 pt-6 pb-16 sm:px-8">
-        <Outlet />
+        <Outlet context={user} />
       </main>
     </div>
   )

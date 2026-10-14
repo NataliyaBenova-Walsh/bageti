@@ -10,9 +10,12 @@
   ],
   "scripts": {
     "dev": "concurrently -n server,client -c green,cyan \"npm run dev -w server\" \"npm run dev -w client\"",
-    "build": "npm run build -w server && npm run build -w client"
+    "build": "npm run build -w server && npm run build -w client",
+    "test": "npm test -w server && npm run test:e2e",
+    "test:e2e": "playwright test"
   },
   "devDependencies": {
+    "@playwright/test": "^1.64.0",
     "concurrently": "^10.0.6"
   }
 }

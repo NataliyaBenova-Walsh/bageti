@@ -1,0 +1,525 @@
+openapi: 3.1.0
+info:
+  title: Fika Bakery API
+  version: 1.0.0
+  description: |
+    API for Fika, a fictional Swedish bakery with shops in Stockholm, Gothenburg and Malmö.
+    Customers browse the menu and order for pickup; staff and admins manage orders and products.
+
+    - Prices are in öre, hundredths of a Swedish krona (`4500` is 45 kr).
+    - Times are UTC ISO 8601 strings. Shop hours and dates are Swedish local time (Europe/Stockholm).
+    - Errors are JSON: `{ "error": "message" }`, sometimes with `fields` (per-field messages) or `soldOut` (product ids).
+    - Admin routes need the `fika_session` cookie from `POST /api/auth/login`.
+servers:
+  - url: /
+    description: This server
+tags:
+  - name: Menu
+  - name: Shops
+  - name: Orders
+  - name: Auth
+  - name: Admin
+    description: Staff and admins. The public demo login has the staff role.
+
+paths:
+  /api/health:
+    get:
+      summary: Server and database status
+      tags: [Menu]
+      responses:
+        '200':
+          description: Running and connected to the database
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status: { type: string, example: ok }
+                  database: { type: string, example: ok }
+        '503':
+          description: Running, but the database can't be reached
+
+  /api/categories:
+    get:
+      summary: The whole menu
+      description: Categories in display order, each with its products in display order.
+      tags: [Menu]
+      responses:
+        '200':
+          description: Categories with products
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Category' }
+
+  /api/products:
+    get:
+      summary: All products
+      tags: [Menu]
+      parameters:
+        - name: category
+          in: query
+          description: Only this category's products
+          schema: { type: string, example: breads }
+      responses:
+        '200':
+          description: Products
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Product' }
+
+  /api/products/{id}:
+    get:
+      summary: One product
+      tags: [Menu]
+      parameters:
+        - $ref: '#/components/parameters/ProductId'
+      responses:
+        '200':
+          description: The product
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Product' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /api/locations:
+    get:
+      summary: The shops
+      tags: [Shops]
+      responses:
+        '200':
+          description: Shops in display order
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Location' }
+
+  /api/locations/{id}/pickup-slots:
+    get:
+      summary: Bookable pickup times for one shop
+      description: |
+        Every 15 minutes during opening hours, from at least 1 hour from now up to 7 days ahead,
+        grouped by Swedish date. Days without any slot left are left out.
+      tags: [Shops]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, example: old-town }
+      responses:
+        '200':
+          description: Pickup days
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    date: { type: string, format: date, example: '2026-10-15' }
+                    slots:
+                      type: array
+                      items: { type: string, format: date-time, example: '2026-10-15T06:00:00.000Z' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /api/orders:
+    post:
+      summary: Place an order
+      description: |
+        Saved as "pay at pickup". The server prices the order from the database; prices sent by the client
+        are ignored. Repeated products are merged. Limited to 10 orders per visitor every 15 minutes.
+      tags: [Orders]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/NewOrder' }
+      responses:
+        '201':
+          description: The order was placed
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/OrderConfirmation' }
+        '400':
+          description: Invalid details, unknown shop or product, or a pickup time that isn't bookable
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '409':
+          description: One or more products sold out
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Error'
+                  - type: object
+                    properties:
+                      soldOut:
+                        type: array
+                        items: { type: integer }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+
+  /api/auth/login:
+    post:
+      summary: Log in
+      description: |
+        Sets the `fika_session` cookie (httpOnly, 7 days). Wrong emails and wrong passwords get the same answer.
+        Limited to 10 attempts per visitor every 15 minutes.
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email: { type: string, format: email, example: demo@example.com }
+                password: { type: string }
+      responses:
+        '200':
+          description: Logged in
+          headers:
+            Set-Cookie:
+              schema: { type: string, example: fika_session=…; Path=/; HttpOnly; SameSite=Lax }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/User' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+
+  /api/auth/logout:
+    post:
+      summary: Log out
+      tags: [Auth]
+      responses:
+        '204':
+          description: The session cookie was cleared
+
+  /api/auth/me:
+    get:
+      summary: The logged-in user
+      tags: [Auth]
+      security:
+        - session: []
+      responses:
+        '200':
+          description: The user
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/User' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /api/admin/orders:
+    get:
+      summary: Orders for one pickup day
+      description: Earliest pickup first. Staff and admins.
+      tags: [Admin]
+      security:
+        - session: []
+      parameters:
+        - name: date
+          in: query
+          description: Swedish date of pickup. Defaults to today.
+          schema: { type: string, format: date, example: '2026-10-15' }
+        - name: status
+          in: query
+          schema: { $ref: '#/components/schemas/OrderStatus' }
+        - name: location
+          in: query
+          description: Shop id
+          schema: { type: string, example: riverside }
+      responses:
+        '200':
+          description: Orders
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/AdminOrder' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /api/admin/orders/{id}:
+    patch:
+      summary: Change an order's status
+      description: |
+        Orders move one step at a time, NEW → PREPARING → READY → PICKED_UP, and can be CANCELLED until
+        they're picked up. Staff and admins.
+      tags: [Admin]
+      security:
+        - session: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status]
+              properties:
+                status: { $ref: '#/components/schemas/OrderStatus' }
+      responses:
+        '200':
+          description: The new status
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id: { type: integer }
+                  status: { $ref: '#/components/schemas/OrderStatus' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409':
+          description: Not the next step, or the order was just changed by someone else
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /api/admin/products:
+    post:
+      summary: Add a product
+      description: Added at the end of its category. Admins only.
+      tags: [Admin]
+      security:
+        - session: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ProductInput' }
+      responses:
+        '201':
+          description: The new product
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Product' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /api/admin/products/{id}:
+    patch:
+      summary: Change a product
+      description: |
+        Send any of the fields. Staff can only change `available` (mark sold out or back in stock);
+        other fields need an admin.
+      tags: [Admin]
+      security:
+        - session: []
+      parameters:
+        - $ref: '#/components/parameters/ProductId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductChanges'
+            example: { available: false }
+      responses:
+        '200':
+          description: The updated product
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Product' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+components:
+  securitySchemes:
+    session:
+      type: apiKey
+      in: cookie
+      name: fika_session
+
+  parameters:
+    ProductId:
+      name: id
+      in: path
+      required: true
+      schema: { type: integer, example: 13 }
+
+  responses:
+    BadRequest:
+      description: Invalid input
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    Unauthorized:
+      description: Not logged in, or wrong email or password
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    Forbidden:
+      description: Logged in, but the account's role isn't allowed to do this
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    NotFound:
+      description: Not found
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    TooManyRequests:
+      description: Rate limit reached
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+
+  schemas:
+    Error:
+      type: object
+      required: [error]
+      properties:
+        error: { type: string, example: Please check the order details }
+        fields:
+          type: object
+          description: Messages per invalid field
+          additionalProperties:
+            type: array
+            items: { type: string }
+
+    Product:
+      type: object
+      properties:
+        id: { type: integer, example: 13 }
+        name: { type: string, example: Cinnamon Bun }
+        description: { type: string, example: Swedish-style bun with cinnamon and cardamom }
+        priceCents: { type: integer, description: Price in öre, example: 3800 }
+        available: { type: boolean, description: false when sold out }
+        categoryId: { type: string, example: sweet-treats }
+
+    ProductInput:
+      type: object
+      required: [name, description, priceCents, categoryId, available]
+      properties: &productFields
+        name: { type: string, minLength: 2, maxLength: 80 }
+        description: { type: string, maxLength: 200 }
+        priceCents: { type: integer, minimum: 1, maximum: 100000, description: Price in öre }
+        categoryId: { type: string }
+        available: { type: boolean }
+
+    ProductChanges:
+      type: object
+      description: Any of the product fields
+      properties: *productFields
+
+    Category:
+      type: object
+      properties:
+        id: { type: string, example: sweet-treats }
+        name: { type: string, example: Sweet Treats }
+        products:
+          type: array
+          items: { $ref: '#/components/schemas/Product' }
+
+    Location:
+      type: object
+      properties:
+        id: { type: string, example: old-town }
+        name: { type: string, example: Fika Stockholm }
+        address: { type: string, example: Lindgatan 12, Stockholm }
+        opensAt: { type: string, description: Swedish time, example: '08:00' }
+        closesAt: { type: string, description: Swedish time, example: '18:00' }
+
+    OrderStatus:
+      type: string
+      enum: [NEW, PREPARING, READY, PICKED_UP, CANCELLED]
+
+    NewOrder:
+      type: object
+      required: [customerName, email, phone, locationId, pickupAt, items]
+      properties:
+        customerName: { type: string, minLength: 2, maxLength: 80, example: Astrid Lindqvist }
+        email: { type: string, format: email, example: astrid@example.com }
+        phone: { type: string, example: +46 70 174 06 05 }
+        note: { type: string, maxLength: 500 }
+        locationId: { type: string, example: riverside }
+        pickupAt:
+          type: string
+          format: date-time
+          description: One of the times from the shop's pickup slots
+          example: '2026-10-15T06:45:00.000Z'
+        items:
+          type: array
+          minItems: 1
+          maxItems: 50
+          items:
+            type: object
+            required: [productId, quantity]
+            properties:
+              productId: { type: integer, example: 13 }
+              quantity: { type: integer, minimum: 1, maximum: 20, example: 2 }
+
+    OrderItem:
+      type: object
+      properties:
+        productId: { type: integer }
+        name: { type: string, description: Product name when the order was placed }
+        unitPriceCents: { type: integer, description: Price in öre when the order was placed }
+        quantity: { type: integer }
+
+    OrderConfirmation:
+      type: object
+      properties:
+        code: { type: string, description: Shown at pickup, example: FK-7Q2M }
+        customerName: { type: string }
+        location:
+          type: object
+          properties:
+            name: { type: string }
+            address: { type: string }
+        pickupAt: { type: string, format: date-time }
+        paymentStatus: { type: string, enum: [PAY_AT_PICKUP, PAID] }
+        totalCents: { type: integer, example: 10800 }
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/OrderItem' }
+
+    AdminOrder:
+      type: object
+      properties:
+        id: { type: integer }
+        code: { type: string }
+        customerName: { type: string }
+        email: { type: string }
+        phone: { type: string }
+        note: { type: [string, 'null'] }
+        locationId: { type: string }
+        location:
+          type: object
+          properties:
+            id: { type: string }
+            name: { type: string }
+        pickupAt: { type: string, format: date-time }
+        status: { $ref: '#/components/schemas/OrderStatus' }
+        paymentStatus: { type: string, enum: [PAY_AT_PICKUP, PAID] }
+        totalCents: { type: integer }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/OrderItem' }
+
+    User:
+      type: object
+      properties:
+        id: { type: integer }
+        email: { type: string }
+        name: { type: string }
+        role: { type: string, enum: [CUSTOMER, STAFF, ADMIN] }

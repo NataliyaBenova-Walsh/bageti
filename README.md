@@ -1,129 +1,172 @@
 # Fika Bakery
 
-A demo website for Fika, a fictional Swedish bakery and café. It's built with plain, hand-written HTML and CSS, with no frameworks or build step.
+Fika is a fictional Swedish bakery with shops in Stockholm, Gothenburg and Malmö. This repo has two parts:
 
-**[View the live site →](https://nataliyabenova-walsh.github.io/bageti/)**
+- **An ordering app** (full stack): customers order cakes, bread and sandwiches for pickup, and staff follow the orders in an admin panel. React and TypeScript on the front end, Express, Prisma and PostgreSQL on the back end, with automated tests and API documentation.
+- **The original static website**, hand-written in HTML and CSS.
 
-[![Fika Bakery homepage](docs/screenshot.png)](https://nataliyabenova-walsh.github.io/bageti/)
+| | |
+| --- | --- |
+| **Ordering app** | [bageti.vercel.app](https://bageti.vercel.app) |
+| **Admin panel** | [bageti.vercel.app/admin](https://bageti.vercel.app/admin), demo login below |
+| **API documentation** | [bageti.vercel.app/api/docs](https://bageti.vercel.app/api/docs/) |
+| **Static site** | [nataliyabenova-walsh.github.io/bageti](https://nataliyabenova-walsh.github.io/bageti/) |
 
-## Sections
+The app runs on free hosting: if nobody has used it for 15 minutes, the first page can take up to a minute to load while the server wakes up.
 
-- **Hero:** full-height photo with a welcome banner and a link to the menu
-- **Product tiles:** a photo and colour-block grid for cakes, cookies, sandwiches and pies, and breads
-- **Menu:** products grouped by category, with descriptions and prices
-- **Locations:** the bakery's shops
-- **Contact:** email and phone
+![The menu, with items in the cart](docs/app-menu.png)
 
-The layout is responsive: under 768px the tiles stack into two columns and the menu and locations go full-width.
+## Try the admin panel
+
+| Email | Password | Role |
+| --- | --- | --- |
+| `demo@example.com` | `fika-demo` | Staff |
+
+The demo login has the **staff** role: it can see all orders, move them through their steps and mark products sold out, but it can't add products or change names and prices. Place an order in the shop first, then find it on the order board.
+
+![The order board, with orders at different steps](docs/app-admin.png)
+
+## Features
+
+**Customers**
+
+- Browse the menu by category, with prices in SEK and sold-out items marked
+- A cart kept in the browser, so it survives a reload
+- Checkout: choose a shop, a day and a 15-minute pickup slot, and enter contact details. Errors are shown next to each field.
+- A confirmation with an order code like `FK-7Q2M` to show at the counter. Orders are paid at pickup.
+
+![Checkout](docs/app-checkout.png)
+
+**Staff and admins**
+
+- **Order board:** one day's pickups, filtered by shop and status, refreshed every 30 seconds. Orders move New → Preparing → Ready → Picked up, one step at a time, and can be cancelled until they're picked up.
+- **Products:** mark products sold out or back in stock. Admins can also add products and change their name, description, price and category.
+
+**Rules the server enforces**
+
+- Pickup times are every 15 minutes during opening hours (08:00–18:00 Swedish time), at least 1 hour and at most 7 days ahead. Times are worked out in the Europe/Stockholm time zone, including the days the clocks change (`server/src/pickup.ts`).
+- The server prices each order from the database and ignores prices sent by the browser. Name and price are copied into the order, so later menu changes don't alter past orders.
+- Orders with sold-out products are refused, and the checkout removes those products from the cart.
+- Logins use scrypt password hashes and a signed JWT in an httpOnly cookie. Wrong emails and wrong passwords get the same answer.
+- Orders and logins are rate-limited per visitor.
+
+## Architecture
+
+```mermaid
+flowchart LR
+    user([Customer or staff]) --> vercel
+    subgraph vercel [Vercel]
+        client[React client]
+    end
+    subgraph render [Render]
+        api[Express API]
+    end
+    vercel -- "/api requests, forwarded" --> api
+    api -- Prisma --> db[(PostgreSQL on Neon)]
+    github[GitHub repo] -- "push: deploy" --> vercel
+    github -- "push: deploy and migrate" --> render
+    github -- "push: build, lint, test" --> ci[GitHub Actions]
+```
+
+The browser only talks to `bageti.vercel.app`. Vercel serves the React app and forwards every `/api` request to the Express server on Render, so the login cookie belongs to the same site and works in every browser, including Safari. Render runs database migrations on each deploy.
 
 ## Built with
 
-- **Semantic HTML5**
-- **CSS Flexbox and Grid** for layout, plus a CSS reset
-- **Google Fonts** (Fira Sans Condensed, Kalam)
-- **Font Awesome** icons
-- Hosted on **GitHub Pages**
-- Photos from [Pexels](https://www.pexels.com), resized and converted to WebP
+| Part | Tools |
+| --- | --- |
+| Client (`client/`) | React 19, TypeScript, Vite, Tailwind CSS, React Router, Zustand (cart), React Hook Form and Zod (checkout) |
+| API (`server/`) | Node 22, Express 5, TypeScript, Prisma 7, PostgreSQL, Zod (validation), jose (JWT) |
+| Tests | Vitest and Supertest (API), Playwright (end to end) |
+| Docs | OpenAPI 3.1 (`server/openapi.yaml`), served with Swagger UI |
+| Hosting | Vercel (client), Render (API), Neon (database), GitHub Actions (CI) |
 
-## Run locally
+## Run it locally
 
-No build is needed. Open `index.html` in a browser, or serve the folder:
-
-```bash
-npx serve .
-```
-
-## Ordering app (in progress)
-
-A full-stack ordering system is being built alongside the static site. **[View the ordering app →](https://bageti.vercel.app)** (the first visit can take up to a minute while the free server wakes up)
-
-- **`client/`:** React, TypeScript, Vite and Tailwind CSS
-- **`server/`:** Node, Express and TypeScript, with Prisma and PostgreSQL (hosted on [Neon](https://neon.tech))
-
-Customers can browse the menu, fill a cart (kept in the browser), choose one of three shops (Stockholm, Gothenburg, Malmö) and a pickup time, and place an order to pay at pickup. Staff log in to an admin panel to follow orders and manage products.
-
-To run it you need Node.js 22+. Development uses a local PostgreSQL database that Prisma runs without Docker, so test orders never reach the live site:
+You need Node.js 22 or later. Development uses local PostgreSQL databases that Prisma runs without Docker, so nothing touches the live data.
 
 ```bash
 npm install
-cp server/.env.example server/.env   # set JWT_SECRET and ADMIN_PASSWORD
-npm run db:local -w server          # start the local database (again after each restart)
+cp server/.env.example server/.env   # then set JWT_SECRET and ADMIN_PASSWORD
+npm run db:local -w server          # start the development database (again after each restart)
 npm run db:migrate -w server        # create the tables and the three shops
 npm run db:seed -w server           # load the menu from data/menu.json
 npm run dev                          # client on :5173, API on :3001
 ```
 
-Open the app at http://localhost:5173, and the admin panel at http://localhost:5173/admin (log in with `ADMIN_EMAIL` and `ADMIN_PASSWORD` from `server/.env`). Port 3001 is the API only, so opening it directly in the browser shows "Cannot GET /". The seed can be run again at any time: it updates existing products instead of adding duplicates. Run the server's tests with `npm test -w server`. Stop `npm run dev` before `db:migrate` or `db:seed`: the local database accepts only one connection at a time.
+- **Shop:** http://localhost:5173
+- **Admin:** http://localhost:5173/admin, with `ADMIN_EMAIL` and `ADMIN_PASSWORD` from `server/.env`, or the demo login
+- **API docs:** http://localhost:5173/api/docs/
 
-### Ordering rules
+Port 3001 is the API only, so opening it in the browser shows "Cannot GET /". Stop `npm run dev` before `db:migrate` or `db:seed`, because the local database accepts only one connection at a time. The seed is safe to run again: it updates products instead of adding duplicates.
 
-- Pickup is every 15 minutes during opening hours (08:00–18:00 Swedish time), at least 1 hour ahead and up to 7 days ahead. The rules are in `server/src/pickup.ts`.
-- The server prices every order from the database and ignores prices sent by the client.
-- Products with `available: false` show as sold out, and orders containing them are refused.
-- Each order gets a short code like `FK-7Q2M` for the counter. Orders are saved as "pay at pickup".
-- One visitor can send at most 10 orders every 15 minutes.
+## Tests
 
-### Admin panel
-
-- **Login:** email and password, checked with scrypt. The server sets a signed JWT in an httpOnly cookie for 7 days. The admin account is created from `ADMIN_EMAIL` and `ADMIN_PASSWORD` when the server starts, and changing `ADMIN_PASSWORD` resets it. Login is limited to 10 attempts per 15 minutes.
-- **Orders** (`/admin`): one day's pickups, filtered by shop and status, refreshed every 30 seconds. Orders move New → Preparing → Ready → Picked up one step at a time, and can be cancelled until they're picked up.
-- **Products** (`/admin/products`): add products, edit name, description, price and category, and mark products sold out or back in stock.
-
-### API
-
-| Method | Path | Returns |
-| --- | --- | --- |
-| GET | `/api/health` | Server and database status |
-| GET | `/api/categories` | The whole menu: categories in display order, each with its products |
-| GET | `/api/products` | All products. Add `?category=breads` for one category |
-| GET | `/api/products/:id` | One product, or 404 |
-| GET | `/api/locations` | The shops, with opening hours |
-| GET | `/api/locations/:id/pickup-slots` | Bookable pickup times for the next 7 days, grouped by date |
-| POST | `/api/orders` | Places an order. Returns 201 with the order code, 400 for invalid details or pickup time, 409 if an item sold out |
-| POST | `/api/auth/login` | Logs in with `{ email, password }` and sets the session cookie |
-| POST | `/api/auth/logout` | Clears the session cookie |
-| GET | `/api/auth/me` | The logged-in user, or 401 |
-| GET | `/api/admin/orders` | Admin: orders for `?date=YYYY-MM-DD` (default today), optionally `&status=` and `&location=` |
-| PATCH | `/api/admin/orders/:id` | Admin: `{ status }`, the next step or `CANCELLED` |
-| POST | `/api/admin/products` | Admin: adds a product |
-| PATCH | `/api/admin/products/:id` | Admin: changes any of `name`, `description`, `priceCents`, `categoryId`, `available` |
-
-Prices are in öre, hundredths of a Swedish krona (`priceCents: 4500` is 45 kr). Times are UTC ISO strings, such as `"2026-10-15T06:45:00.000Z"` for 08:45 in Sweden.
-
-Example order body:
-
-```json
-{
-  "customerName": "Maria Ivanova",
-  "email": "maria@example.com",
-  "phone": "+46 70 174 06 05",
-  "locationId": "riverside",
-  "pickupAt": "2026-10-15T06:45:00.000Z",
-  "items": [{ "productId": 1, "quantity": 2 }]
-}
+```bash
+npm run db:test -w server   # start the test database once, and put its URL in TEST_DATABASE_URL in server/.env
+npm test                    # API tests, then the end-to-end test
 ```
 
-### Deployment
+- **API tests** (`server/src/*.test.ts`, Vitest and Supertest): the menu, pickup times across clock changes, placing orders (pricing, validation, sold-out items), login, and what staff and admins may do. They empty and refill the test database first, and refuse to run against anything but a local database.
+- **Documentation test:** checks that every route in the code is in `openapi.yaml`, and that every documented route exists.
+- **End-to-end test** (`e2e/`, Playwright): a customer orders in a real browser, then a staff member logs in, finds the order and starts preparing it. It runs its own API and client on ports 3101 and 5174, so it doesn't disturb `npm run dev`.
+
+GitHub Actions runs the build, lint, API tests and end-to-end test on every push, with a throwaway PostgreSQL database.
+
+## API
+
+The full reference is at [/api/docs](https://bageti.vercel.app/api/docs/), where you can also try the requests. It's generated from [`server/openapi.yaml`](server/openapi.yaml).
+
+- Prices are in öre, hundredths of a krona (`"priceCents": 4500` is 45 kr).
+- Times are UTC ISO strings, such as `"2026-10-15T06:45:00.000Z"` for 08:45 in Sweden.
+- Admin routes need the session cookie from `POST /api/auth/login`.
+
+Example order:
+
+```bash
+curl -X POST https://bageti.vercel.app/api/orders \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "customerName": "Astrid Lindqvist",
+    "email": "astrid@example.com",
+    "phone": "+46 70 174 06 05",
+    "locationId": "riverside",
+    "pickupAt": "<a time from /api/locations/riverside/pickup-slots>",
+    "items": [{ "productId": 13, "quantity": 2 }]
+  }'
+```
+
+## Deployment
 
 | Part | Host | Settings |
 | --- | --- | --- |
-| API (`server/`) | [Render](https://render.com), free plan | `render.yaml` Blueprint. Set `DATABASE_URL` (Neon), `ADMIN_EMAIL` and `ADMIN_PASSWORD`; Render generates `JWT_SECRET`. Migrations run on each deploy. |
-| Client (`client/`) | [Vercel](https://vercel.com) | Root directory `client`. `client/vercel.json` forwards `/api` to Render, so the site and API share one address and the login cookie works in every browser. It also sends every other path to the app, so links like `/checkout` work. |
-| Database | [Neon](https://neon.tech) | Seed once with `DATABASE_URL=<production URL> npm run db:seed -w server` |
+| API | [Render](https://render.com), free plan | `render.yaml` Blueprint. Set `DATABASE_URL` (Neon), `ADMIN_EMAIL` and `ADMIN_PASSWORD`. Render generates `JWT_SECRET`, and the demo login comes from `render.yaml`. Migrations run on each deploy. |
+| Client | [Vercel](https://vercel.com) | Root directory `client`. `client/vercel.json` forwards `/api` to Render and sends every other path to the app, so links like `/checkout` work. |
+| Database | [Neon](https://neon.tech) | Seed the menu once with `DATABASE_URL=<production URL> npm run db:seed -w server` |
 
-The free Render server sleeps after about 15 minutes without visitors, so the first visit after that can take up to a minute. The client shows "Waking up the server…" while it waits.
-
-GitHub Actions (`.github/workflows/ci.yml`) builds both apps, lints the client and runs the server tests on every push and pull request.
-
-## Structure
+## Project structure
 
 ```
-index.html     Page markup
-css/           Reset and main stylesheet
-data/          Menu data (menu.json), used to seed the ordering system's database
-images/        Product and location photos
-docs/          README screenshot
-client/        React ordering app
-server/        Express API and Prisma schema
-render.yaml    Render deployment settings for the API
+client/          React app: shop pages, checkout, admin panel
+server/          Express API
+  src/app.ts       Routes and middleware
+  src/pickup.ts    Pickup time rules (Swedish time)
+  src/auth.ts      Passwords, sessions and roles
+  src/routes/      Menu, shops, orders, login and admin routes
+  prisma/          Database schema, migrations and seed script
+  openapi.yaml     API documentation
+e2e/             Playwright end-to-end test
+data/            Menu data (menu.json), used by the seed script
+render.yaml      Render deployment settings
+index.html, css/, images/   The static website
+docs/            Screenshots
 ```
+
+## The static website
+
+The first version of Fika, hand-written in semantic HTML and CSS (Flexbox, Grid, no framework or build step), hosted on GitHub Pages. It has a hero banner, a photo grid, the menu, the shops and a contact section, and works down to phone width. Photos are from [Pexels](https://www.pexels.com).
+
+[![The static website](docs/screenshot.png)](https://nataliyabenova-walsh.github.io/bageti/)
+
+To view it locally, open `index.html`, or run `npx serve .`.
+
+*Fika is a demo project, not a real shop.*

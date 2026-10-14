@@ -1,12 +1,16 @@
 import { Router } from 'express'
 import { z } from 'zod'
-import { requireAdmin } from '../auth.js'
+import { requireRole } from '../auth.js'
 import { prisma } from '../db.js'
 import type { OrderStatus, Prisma } from '../generated/prisma/client.js'
 import { shopDayRange, shopToday } from '../pickup.js'
 
 export const adminRouter = Router()
-adminRouter.use('/admin', requireAdmin)
+
+// Staff (including the public demo login) can work with orders and mark products
+// sold out; adding products and changing their details needs an admin.
+const staffOrAdmin = requireRole('STAFF', 'ADMIN')
+const adminOnly = requireRole('ADMIN')
 
 const STATUSES = ['NEW', 'PREPARING', 'READY', 'PICKED_UP', 'CANCELLED'] as const
 
@@ -27,7 +31,7 @@ const orderQuery = z.object({
 })
 
 // Orders for one pickup day, earliest pickup first
-adminRouter.get('/admin/orders', async (req, res) => {
+adminRouter.get('/admin/orders', staffOrAdmin, async (req, res) => {
   const parsed = orderQuery.safeParse(req.query)
   if (!parsed.success) {
     res.status(400).json({ error: 'Invalid filter' })
@@ -46,7 +50,7 @@ adminRouter.get('/admin/orders', async (req, res) => {
   res.json(orders)
 })
 
-adminRouter.patch('/admin/orders/:id', async (req, res) => {
+adminRouter.patch('/admin/orders/:id', staffOrAdmin, async (req, res) => {
   const id = Number(req.params.id)
   const parsed = z.object({ status: z.enum(STATUSES) }).safeParse(req.body)
   if (!Number.isInteger(id) || !parsed.success) {
@@ -84,7 +88,7 @@ function validationError(error: z.ZodError) {
   return { error: 'Please check the product details', fields: z.flattenError(error).fieldErrors }
 }
 
-adminRouter.post('/admin/products', async (req, res) => {
+adminRouter.post('/admin/products', adminOnly, async (req, res) => {
   const parsed = productInput.safeParse(req.body)
   if (!parsed.success) {
     res.status(400).json(validationError(parsed.error))
@@ -104,11 +108,16 @@ adminRouter.post('/admin/products', async (req, res) => {
 })
 
 // Any subset of the fields, e.g. { "available": false } to mark a product sold out
-adminRouter.patch('/admin/products/:id', async (req, res) => {
+adminRouter.patch('/admin/products/:id', staffOrAdmin, async (req, res) => {
   const id = Number(req.params.id)
   const parsed = productInput.partial().safeParse(req.body)
   if (!Number.isInteger(id) || !parsed.success) {
     res.status(400).json(parsed.success ? { error: 'Invalid product id' } : validationError(parsed.error))
+    return
+  }
+  const changesDetails = Object.keys(parsed.data).some((key) => key !== 'available')
+  if (changesDetails && res.locals.user.role !== 'ADMIN') {
+    res.status(403).json({ error: 'Only admins can change product details' })
     return
   }
   const data: Prisma.ProductUncheckedUpdateInput = parsed.data

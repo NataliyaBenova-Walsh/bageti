@@ -8,7 +8,7 @@ export default defineConfig({
   server: {
     // Send API calls to the Express server during development
     proxy: {
-      '/api': 'http://localhost:3001',
+      '/api': `http://localhost:${process.env.API_PORT ?? 3001}`,
     },
   },
 })

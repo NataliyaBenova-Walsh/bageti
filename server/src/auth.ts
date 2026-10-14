@@ -65,38 +65,41 @@ export async function currentUser(req: Request) {
   }
 }
 
-export const requireAdmin: RequestHandler = async (req, res, next) => {
-  const user = await currentUser(req)
-  if (!user) {
-    res.status(401).json({ error: 'Please log in' })
-    return
+// Lets the request through only for a logged-in user with one of these roles
+export function requireRole(...roles: Role[]): RequestHandler {
+  return async (req, res, next) => {
+    const user = await currentUser(req)
+    if (!user) {
+      res.status(401).json({ error: 'Please log in' })
+      return
+    }
+    if (!roles.includes(user.role)) {
+      res.status(403).json({ error: 'Your account is not allowed to do this' })
+      return
+    }
+    res.locals.user = user
+    next()
   }
-  if (user.role !== 'ADMIN') {
-    res.status(403).json({ error: 'Admins only' })
-    return
-  }
-  res.locals.user = user
-  next()
 }
 
-// Creates the admin account from ADMIN_EMAIL and ADMIN_PASSWORD, or updates
-// its password if ADMIN_PASSWORD has changed. Runs when the server starts.
-export async function ensureAdmin() {
-  const email = process.env.ADMIN_EMAIL?.trim().toLowerCase()
-  const password = process.env.ADMIN_PASSWORD
-  if (!email || !password) {
-    console.warn('ADMIN_EMAIL or ADMIN_PASSWORD is not set: no admin account created')
-    return
-  }
+// Creates an account, or updates its role and password if they've changed
+async function ensureAccount(email: string, password: string, role: Role, name: string) {
+  email = email.trim().toLowerCase()
   const existing = await prisma.user.findUnique({ where: { email } })
   if (!existing) {
-    await prisma.user.create({ data: { email, name: 'Admin', role: 'ADMIN', passwordHash: await hashPassword(password) } })
-    console.log(`Created admin account ${email}`)
-  } else if (existing.role !== 'ADMIN' || !(await verifyPassword(password, existing.passwordHash))) {
-    await prisma.user.update({
-      where: { id: existing.id },
-      data: { role: 'ADMIN', passwordHash: await hashPassword(password) },
-    })
-    console.log(`Updated admin account ${email}`)
+    await prisma.user.create({ data: { email, name, role, passwordHash: await hashPassword(password) } })
+    console.log(`Created ${role} account ${email}`)
+  } else if (existing.role !== role || !(await verifyPassword(password, existing.passwordHash))) {
+    await prisma.user.update({ where: { id: existing.id }, data: { role, passwordHash: await hashPassword(password) } })
+    console.log(`Updated ${role} account ${email}`)
   }
+}
+
+// Runs when the server starts. ADMIN_EMAIL and ADMIN_PASSWORD give full access;
+// DEMO_EMAIL and DEMO_PASSWORD are the public demo login, with the staff role.
+export async function ensureAccounts() {
+  const { ADMIN_EMAIL, ADMIN_PASSWORD, DEMO_EMAIL, DEMO_PASSWORD } = process.env
+  if (ADMIN_EMAIL && ADMIN_PASSWORD) await ensureAccount(ADMIN_EMAIL, ADMIN_PASSWORD, 'ADMIN', 'Admin')
+  else console.warn('ADMIN_EMAIL or ADMIN_PASSWORD is not set: no admin account created')
+  if (DEMO_EMAIL && DEMO_PASSWORD) await ensureAccount(DEMO_EMAIL, DEMO_PASSWORD, 'STAFF', 'Demo staff')
 }

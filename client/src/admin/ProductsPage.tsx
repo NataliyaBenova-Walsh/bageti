@@ -1,6 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { ApiError, getJson, patchJson, postJson } from '../api'
 import { formatPrice } from '../format'
+import { useAdminUser } from './useAdminUser'
 import type { Category, Product } from '../types'
 
 type Draft = { name: string; description: string; price: string; categoryId: string }
@@ -103,6 +104,8 @@ function ProductForm({
 }
 
 export function ProductsPage() {
+  // Staff (and the demo login) can only switch products between in stock and sold out
+  const isAdmin = useAdminUser().role === 'ADMIN'
   const [categories, setCategories] = useState<Category[] | null>(null)
   const [editingId, setEditingId] = useState<number | null>(null)
   const [editDraft, setEditDraft] = useState<Draft>(emptyDraft())
@@ -170,7 +173,10 @@ export function ProductsPage() {
   return (
     <>
       <h1 className="mb-1 font-hand text-4xl text-orange">Products</h1>
-      <p className="mb-6 text-sm text-taupe">Sold-out products stay on the menu but can't be ordered.</p>
+      <p className="mb-6 text-sm text-taupe">
+        Sold-out products stay on the menu but can't be ordered.
+        {!isAdmin && ' Your staff account can mark products sold out; only admins can add or change products.'}
+      </p>
 
       <div aria-live="polite">
         {message && (
@@ -180,12 +186,14 @@ export function ProductsPage() {
         )}
       </div>
 
-      <section aria-labelledby="add-title" className="mb-8 rounded-lg bg-white p-4 shadow-sm">
-        <h2 id="add-title" className="mb-2 text-lg font-semibold">
-          Add a product
-        </h2>
-        <ProductForm draft={newDraft} categories={categories} onChange={setNewDraft} onSubmit={addProduct} submitLabel="Add" busy={busy} />
-      </section>
+      {isAdmin && (
+        <section aria-labelledby="add-title" className="mb-8 rounded-lg bg-white p-4 shadow-sm">
+          <h2 id="add-title" className="mb-2 text-lg font-semibold">
+            Add a product
+          </h2>
+          <ProductForm draft={newDraft} categories={categories} onChange={setNewDraft} onSubmit={addProduct} submitLabel="Add" busy={busy} />
+        </section>
+      )}
 
       {categories.map((category) => (
         <section key={category.id} aria-labelledby={`admin-category-${category.id}`} className="mb-8">
@@ -225,9 +233,11 @@ export function ProductsPage() {
                     >
                       {product.available ? 'In stock' : 'Sold out'}
                     </button>
-                    <button type="button" onClick={() => startEdit(product)} className="text-sm text-orange underline">
-                      Edit
-                    </button>
+                    {isAdmin && (
+                      <button type="button" onClick={() => startEdit(product)} className="text-sm text-orange underline">
+                        Edit
+                      </button>
+                    )}
                   </div>
                 </li>
               ),

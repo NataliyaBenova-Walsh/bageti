@@ -17,6 +17,8 @@ const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   limit: 10,
   message: { error: 'Too many login attempts. Please try again in 15 minutes.' },
+  // Off in automated tests, which send many requests from one address
+  skip: () => process.env.NODE_ENV === 'test',
 })
 
 // Checked against when the email is unknown, so the reply takes as long as for a real account
