@@ -15,16 +15,77 @@ model Category {
 }
 
 model Product {
-  id          Int      @id @default(autoincrement())
+  id          Int         @id @default(autoincrement())
   name        String
   description String
   priceCents  Int
-  available   Boolean  @default(true)
-  sortOrder   Int      @default(0)
-  category    Category @relation(fields: [categoryId], references: [id])
+  available   Boolean     @default(true)
+  sortOrder   Int         @default(0)
+  category    Category    @relation(fields: [categoryId], references: [id])
   categoryId  String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  orderItems  OrderItem[]
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
 
   @@index([categoryId])
+}
+
+model Location {
+  id        String  @id // slug, e.g. "old-town"
+  name      String
+  address   String
+  // Opening hours in Sofia local time, "HH:MM". The same every day for now.
+  opensAt   String
+  closesAt  String
+  sortOrder Int     @default(0)
+  orders    Order[]
+}
+
+enum OrderStatus {
+  NEW
+  BAKING
+  READY
+  PICKED_UP
+  CANCELLED
+}
+
+enum PaymentStatus {
+  PAY_AT_PICKUP
+  PAID
+}
+
+model Order {
+  id            Int           @id @default(autoincrement())
+  // Short reference shown to the customer, e.g. "FK-7Q2M"
+  code          String        @unique
+  customerName  String
+  email         String
+  phone         String
+  note          String?
+  location      Location      @relation(fields: [locationId], references: [id])
+  locationId    String
+  pickupAt      DateTime
+  status        OrderStatus   @default(NEW)
+  paymentStatus PaymentStatus @default(PAY_AT_PICKUP)
+  totalCents    Int
+  items         OrderItem[]
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@index([locationId, pickupAt])
+}
+
+// Name and price are copied from the product when the order is placed,
+// so later menu changes don't alter past orders.
+model OrderItem {
+  id             Int     @id @default(autoincrement())
+  order          Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderId        Int
+  product        Product @relation(fields: [productId], references: [id])
+  productId      Int
+  name           String
+  unitPriceCents Int
+  quantity       Int
+
+  @@index([orderId])
 }
