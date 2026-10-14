@@ -8,12 +8,12 @@ import { shopDayRange, shopToday } from '../pickup.js'
 export const adminRouter = Router()
 adminRouter.use('/admin', requireAdmin)
 
-const STATUSES = ['NEW', 'BAKING', 'READY', 'PICKED_UP', 'CANCELLED'] as const
+const STATUSES = ['NEW', 'PREPARING', 'READY', 'PICKED_UP', 'CANCELLED'] as const
 
 // Orders move forward one step at a time, and can be cancelled until they're picked up
 const NEXT_STATUSES: Record<OrderStatus, OrderStatus[]> = {
-  NEW: ['BAKING', 'CANCELLED'],
-  BAKING: ['READY', 'CANCELLED'],
+  NEW: ['PREPARING', 'CANCELLED'],
+  PREPARING: ['READY', 'CANCELLED'],
   READY: ['PICKED_UP', 'CANCELLED'],
   PICKED_UP: [],
   CANCELLED: [],

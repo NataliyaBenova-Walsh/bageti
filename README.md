@@ -66,7 +66,7 @@ Open the app at http://localhost:5173, and the admin panel at http://localhost:5
 ### Admin panel
 
 - **Login:** email and password, checked with scrypt. The server sets a signed JWT in an httpOnly cookie for 7 days. The admin account is created from `ADMIN_EMAIL` and `ADMIN_PASSWORD` when the server starts, and changing `ADMIN_PASSWORD` resets it. Login is limited to 10 attempts per 15 minutes.
-- **Orders** (`/admin`): one day's pickups, filtered by shop and status, refreshed every 30 seconds. Orders move New → Baking → Ready → Picked up one step at a time, and can be cancelled until they're picked up.
+- **Orders** (`/admin`): one day's pickups, filtered by shop and status, refreshed every 30 seconds. Orders move New → Preparing → Ready → Picked up one step at a time, and can be cancelled until they're picked up.
 - **Products** (`/admin/products`): add products, edit name, description, price and category, and mark products sold out or back in stock.
 
 ### API

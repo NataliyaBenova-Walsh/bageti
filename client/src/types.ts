@@ -26,7 +26,7 @@ export type OrderConfirmation = {
   items: { productId: number; name: string; unitPriceCents: number; quantity: number }[]
 }
 
-export type OrderStatus = 'NEW' | 'BAKING' | 'READY' | 'PICKED_UP' | 'CANCELLED'
+export type OrderStatus = 'NEW' | 'PREPARING' | 'READY' | 'PICKED_UP' | 'CANCELLED'
 
 export type User = { id: number; email: string; name: string; role: 'CUSTOMER' | 'ADMIN' }
 

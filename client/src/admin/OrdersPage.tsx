@@ -5,7 +5,7 @@ import type { AdminOrder, Location, OrderStatus } from '../types'
 
 const STATUS_LABEL: Record<OrderStatus, string> = {
   NEW: 'New',
-  BAKING: 'Baking',
+  PREPARING: 'Preparing',
   READY: 'Ready',
   PICKED_UP: 'Picked up',
   CANCELLED: 'Cancelled',
@@ -13,7 +13,7 @@ const STATUS_LABEL: Record<OrderStatus, string> = {
 
 const STATUS_STYLE: Record<OrderStatus, string> = {
   NEW: 'bg-orange text-cream',
-  BAKING: 'bg-beige text-dark-brown',
+  PREPARING: 'bg-beige text-dark-brown',
   READY: 'bg-green text-cream',
   PICKED_UP: 'bg-cream text-taupe border border-beige',
   CANCELLED: 'bg-cream text-taupe border border-beige line-through',
@@ -21,12 +21,12 @@ const STATUS_STYLE: Record<OrderStatus, string> = {
 
 // The button that moves an order to its next step (the server enforces the same order)
 const NEXT_STEP: Partial<Record<OrderStatus, { status: OrderStatus; label: string }>> = {
-  NEW: { status: 'BAKING', label: 'Start baking' },
-  BAKING: { status: 'READY', label: 'Mark ready' },
+  NEW: { status: 'PREPARING', label: 'Start preparing' },
+  PREPARING: { status: 'READY', label: 'Mark ready' },
   READY: { status: 'PICKED_UP', label: 'Picked up' },
 }
 
-const FILTERS: (OrderStatus | 'ALL')[] = ['ALL', 'NEW', 'BAKING', 'READY', 'PICKED_UP', 'CANCELLED']
+const FILTERS: (OrderStatus | 'ALL')[] = ['ALL', 'NEW', 'PREPARING', 'READY', 'PICKED_UP', 'CANCELLED']
 
 const REFRESH_SECONDS = 30
 

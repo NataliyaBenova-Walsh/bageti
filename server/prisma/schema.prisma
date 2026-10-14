@@ -43,7 +43,7 @@ model Location {
 
 enum OrderStatus {
   NEW
-  BAKING
+  PREPARING
   READY
   PICKED_UP
   CANCELLED
