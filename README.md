@@ -42,12 +42,12 @@ A full-stack ordering system is being built alongside the static site. **[View t
 
 Customers can browse the menu, fill a cart (kept in the browser), choose a shop and a pickup time, and place an order to pay at pickup.
 
-To run it you need Node.js 22+ and a PostgreSQL database. For development, Prisma can run one locally without Docker:
+To run it you need Node.js 22+. Development uses a local PostgreSQL database that Prisma runs without Docker, so test orders never reach the live site:
 
 ```bash
 npm install
-cp server/.env.example server/.env   # then set DATABASE_URL
-npm run db:local -w server          # optional: start a local database and print its URL
+cp server/.env.example server/.env   # already set up for the local database
+npm run db:local -w server          # start the local database (again after each restart)
 npm run db:migrate -w server        # create the tables and the three shops
 npm run db:seed -w server           # load the menu from data/menu.json
 npm run dev                          # client on :5173, API on :3001

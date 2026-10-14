@@ -11,5 +11,7 @@ export default defineConfig({
   },
   datasource: {
     url: process.env["DATABASE_URL"],
+    // Only needed with the local `prisma dev` database, which can't create a separate one itself
+    shadowDatabaseUrl: process.env["SHADOW_DATABASE_URL"],
   },
 });
