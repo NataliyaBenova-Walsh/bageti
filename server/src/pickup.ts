@@ -1,7 +1,7 @@
-// Pickup time rules. All shop hours are Sofia local time; times sent to and
+// Pickup time rules. All shop hours are Swedish local time; times sent to and
 // from the client are UTC ISO strings, so the browser's time zone never matters.
 
-export const TIME_ZONE = 'Europe/Sofia'
+export const TIME_ZONE = 'Europe/Stockholm'
 export const SLOT_MINUTES = 15
 export const LEAD_MINUTES = 60
 export const DAYS_AHEAD = 7
@@ -18,7 +18,7 @@ const formatter = new Intl.DateTimeFormat('en-US', {
   minute: 'numeric',
 })
 
-// The Sofia calendar date and wall-clock time of an instant
+// The Swedish calendar date and wall-clock time of an instant
 function localParts(instant: Date) {
   const parts = Object.fromEntries(formatter.formatToParts(instant).map((p) => [p.type, p.value]))
   return {
@@ -29,14 +29,14 @@ function localParts(instant: Date) {
   }
 }
 
-// Minutes Sofia is ahead of UTC at an instant (120 in winter, 180 in summer)
+// Minutes Sweden is ahead of UTC at an instant (60 in winter, 120 in summer)
 function offsetMinutes(instant: Date): number {
   const p = localParts(instant)
   const asUtc = Date.UTC(p.year, p.month - 1, p.day, 0, p.minutes)
   return Math.round((asUtc - Math.floor(instant.getTime() / 60000) * 60000) / 60000)
 }
 
-// The instant when Sofia's clocks show this date and time
+// The instant when Swedish clocks show this date and time
 function localToInstant(year: number, month: number, day: number, minutes: number): Date {
   const guess = Date.UTC(year, month - 1, day, 0, minutes)
   const first = new Date(guess - offsetMinutes(new Date(guess)) * 60000)
@@ -51,7 +51,7 @@ function toMinutes(hhmm: string): number {
 
 export type PickupDay = { date: string; slots: Date[] }
 
-// Bookable pickup times for the next DAYS_AHEAD days, grouped by Sofia date.
+// Bookable pickup times for the next DAYS_AHEAD days, grouped by Swedish date.
 // The last slot is SLOT_MINUTES before closing; the first is at least LEAD_MINUTES from now.
 export function pickupSlots(hours: Hours, now: Date): PickupDay[] {
   const earliest = now.getTime() + LEAD_MINUTES * 60000
@@ -69,6 +69,18 @@ export function pickupSlots(hours: Hours, now: Date): PickupDay[] {
     if (slots.length > 0) days.push({ date: calendarDay.toISOString().slice(0, 10), slots })
   }
   return days
+}
+
+// The UTC instants when a Swedish calendar date ("YYYY-MM-DD") starts and the next one starts
+export function shopDayRange(date: string): { start: Date; end: Date } {
+  const [year, month, day] = date.split('-').map(Number)
+  return { start: localToInstant(year, month, day, 0), end: localToInstant(year, month, day + 1, 0) }
+}
+
+// Today's date in Sweden, "YYYY-MM-DD"
+export function shopToday(now: Date): string {
+  const { year, month, day } = localParts(now)
+  return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`
 }
 
 export function isPickupAllowed(hours: Hours, pickupAt: Date, now: Date): boolean {

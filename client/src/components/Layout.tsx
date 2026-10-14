@@ -21,6 +21,12 @@ export function Layout() {
       <main className="mx-auto max-w-5xl px-4 pt-8 pb-16 sm:px-8">
         <Outlet />
       </main>
+      <footer className="border-t border-beige/60 px-4 py-6 text-center text-sm text-taupe">
+        Fika is a demo project, not a real shop. ·{' '}
+        <Link to="/admin" className="underline">
+          Staff login
+        </Link>
+      </footer>
       <ScrollRestoration />
     </div>
   )

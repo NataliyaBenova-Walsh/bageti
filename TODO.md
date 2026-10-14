@@ -11,6 +11,7 @@ The plan for this project:
 This site was originally built for a real bakery, but the business was sold before handover. It shouldn't use a real business's identity in a public portfolio.
 
 - [x] Pick a fictional bakery name, and check it isn't a real bakery in Sofia (**Fika**)
+- [x] Move the bakery to Sweden: Stockholm, Gothenburg and Malmö shops, SEK prices, Swedish time zone and hours. "Fika" is a common Swedish word, so cafés with this name likely exist in Sweden; the footer's demo note makes clear this one isn't real.
 - [x] Replace the logo (`images/logo-2.jpg` is the real logo) with a new text or SVG logo
 - [x] Replace the 3 real addresses and location names (NDK, Iztok, UACG) with fictional ones
 - [x] Replace the Facebook and Instagram links (header and footer) with `#` placeholders, or remove them
@@ -46,7 +47,8 @@ The React + Tailwind client in phase 3 will replace this site, so do the items t
 1. [x] **Setup:** npm workspaces monorepo with `client/` (React + TypeScript + Vite + Tailwind) and `server/` (Node + Express + TypeScript), PostgreSQL on Neon + Prisma. (Neon is used for development too, instead of Docker Compose, because Docker isn't installed.)
 2. [x] **Menu from the database:** products and categories API, with the client rendering the menu from the API. Seed it from the phase 2 menu JSON. Store prices as integer cents in EUR. **Deploy at this point** (Vercel + Render or Railway + Neon), with GitHub Actions CI. (Deployed: client on Vercel at bageti.vercel.app, API on Render's free plan at fika-api-eqig.onrender.com.)
 3. [x] **Cart and orders:** Zustand cart (persisted), checkout with React Hook Form + Zod (pickup location and time), orders saved as "pay at pickup". Pickup rules: only times within opening hours, a minimum lead time, and products staff can mark as sold out. (Done: sold-out products are shown and refused; the staff screen to mark them comes with the admin panel in step 4.)
-4. [ ] **Admin panel:** auth with roles (customer and admin), product management with image upload, order list with status changes (New → Baking → Ready → Picked up). Choose the auth approach first (e.g. Auth.js/Lucia, or JWT in httpOnly cookies). Store uploads in Cloudinary or S3/R2, because Render and Railway erase their local disk on each deploy.
+4. [x] **Admin panel:** auth with roles (customer and admin), product management with image upload, order list with status changes (New → Baking → Ready → Picked up). Choose the auth approach first (e.g. Auth.js/Lucia, or JWT in httpOnly cookies). Store uploads in Cloudinary or S3/R2, because Render and Railway erase their local disk on each deploy. (Done: email and password login with a JWT in an httpOnly cookie, roles, order board, product editing and sold-out switch. Image upload is postponed; it will use Cloudinary.)
+   - [ ] **Product photos:** upload to Cloudinary from the products page, and show photos on the menu
 5. [ ] **Payments:** Stripe Checkout in test mode, plus a webhook that marks orders as paid
 6. [ ] **Realtime and extras:** live order feed for staff (WebSockets or SSE), confirmation email, sales dashboard (Recharts)
 7. [ ] **Quality:** Vitest API tests, a Playwright end-to-end test for the order flow, OpenAPI docs, a README with an architecture diagram and a demo admin login

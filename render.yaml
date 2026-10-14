@@ -16,8 +16,15 @@ services:
         - package-lock.json
         - render.yaml
     envVars:
-      # Both are entered in the Render dashboard when the Blueprint is created
+      # Entered in the Render dashboard
       - key: DATABASE_URL
         sync: false
       - key: CLIENT_ORIGIN
         sync: false
+      - key: ADMIN_EMAIL
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
+      # Signs login cookies; Render generates a random value
+      - key: JWT_SECRET
+        generateValue: true
