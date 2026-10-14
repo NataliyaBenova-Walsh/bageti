@@ -16,6 +16,10 @@ The app runs on free hosting: if nobody has used it for 15 minutes, the first pa
 
 ![The menu, with items in the cart](docs/app-menu.png)
 
+## History
+
+This started as a school project: a static website in HTML and CSS for a real local bakery. The business was later sold, so I turned the site into Fika, a fictional bakery, replaced the real names, photos and contact details, and built it out into a full-stack ordering system with an admin panel, tests and API documentation.
+
 ## Try the admin panel
 
 | Email | Password | Role |
@@ -163,7 +167,7 @@ docs/            Screenshots
 
 ## The static website
 
-The first version of Fika, hand-written in semantic HTML and CSS (Flexbox, Grid, no framework or build step), hosted on GitHub Pages. It has a hero banner, a photo grid, the menu, the shops and a contact section, and works down to phone width. Photos are from [Pexels](https://www.pexels.com).
+The first version of Fika, from the original school project: hand-written in semantic HTML and CSS (Flexbox, Grid, no framework or build step), hosted on GitHub Pages. It has a hero banner, a photo grid, the menu, the shops and a contact section, and works down to phone width. Photos are from [Pexels](https://www.pexels.com).
 
 [![The static website](docs/screenshot.png)](https://nataliyabenova-walsh.github.io/bageti/)
 
