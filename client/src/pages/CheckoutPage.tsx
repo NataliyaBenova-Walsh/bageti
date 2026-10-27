@@ -1,7 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useEffect, useState, type ReactNode } from 'react'
 import { useForm, useWatch } from 'react-hook-form'
-import { Link, useNavigate } from 'react-router'
+import { Link, useNavigate, useSearchParams } from 'react-router'
 import { z } from 'zod'
 import { ApiError, getJson, postJson } from '../api'
 import { MAX_QUANTITY, cartTotal, useCart } from '../cart'
@@ -20,25 +20,54 @@ const checkoutSchema = z.object({
   locationId: z.string().min(1, 'Please choose a shop'),
   pickupDate: z.string().min(1, 'Please choose a day'),
   pickupAt: z.string().min(1, 'Please choose a time'),
+  payment: z.enum(['card', 'pickup']),
 })
 
 type CheckoutForm = z.infer<typeof checkoutSchema>
 
 const inputClass =
-  'w-full rounded-md border-2 border-beige bg-white px-3 py-2 focus:border-orange focus:outline-none aria-[invalid=true]:border-med-brown'
+  'w-full rounded-md border-2 border-beige bg-white px-3 py-2 focus:border-orange focus:outline-none aria-[invalid=true]:border-red aria-[invalid=true]:bg-red-50'
 
-function Field({ id, label, error, children }: { id: string; label: string; error?: string; children: ReactNode }) {
+// A red asterisk after required labels. Screen readers skip it and hear the input's `required` instead.
+function RequiredMark() {
+  return (
+    <span aria-hidden="true" className="ml-0.5 text-red">
+      *
+    </span>
+  )
+}
+
+function FieldError({ id, message }: { id: string; message?: string }) {
+  if (!message) return null
+  return (
+    <p id={`${id}-error`} className="mt-1 flex items-center gap-1 text-sm font-semibold text-red">
+      <span aria-hidden="true">⚠</span>
+      {message}
+    </p>
+  )
+}
+
+function Field({
+  id,
+  label,
+  error,
+  required = false,
+  children,
+}: {
+  id: string
+  label: string
+  error?: string
+  required?: boolean
+  children: ReactNode
+}) {
   return (
     <div>
       <label htmlFor={id} className="mb-1 block font-semibold">
         {label}
+        {required && <RequiredMark />}
       </label>
       {children}
-      {error && (
-        <p id={`${id}-error`} className="mt-1 text-sm font-semibold text-med-brown">
-          {error}
-        </p>
-      )}
+      <FieldError id={id} message={error} />
     </div>
   )
 }
@@ -49,12 +78,17 @@ export function CheckoutPage() {
   const remove = useCart((state) => state.remove)
   const clear = useCart((state) => state.clear)
   const navigate = useNavigate()
+  // Stripe sends the customer back here if they cancel the payment
+  const paymentCancelled = useSearchParams()[0].get('payment') === 'cancelled'
 
   const [locations, setLocations] = useState<Location[]>([])
   const [days, setDays] = useState<PickupDay[]>([])
+  const [cardPayments, setCardPayments] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
   // Set once the order is accepted, so the emptied cart doesn't flash up before the confirmation page
   const [placed, setPlaced] = useState(false)
+  // Set while the browser goes to Stripe's payment page
+  const [redirecting, setRedirecting] = useState(false)
 
   const {
     register,
@@ -64,16 +98,33 @@ export function CheckoutPage() {
     formState: { errors, isSubmitting },
   } = useForm<CheckoutForm>({
     resolver: zodResolver(checkoutSchema),
-    defaultValues: { customerName: '', email: '', phone: '', note: '', locationId: '', pickupDate: '', pickupAt: '' },
+    defaultValues: {
+      customerName: '',
+      email: '',
+      phone: '',
+      note: '',
+      locationId: '',
+      pickupDate: '',
+      pickupAt: '',
+      payment: 'pickup',
+    },
   })
   const locationId = useWatch({ control, name: 'locationId' })
   const pickupDate = useWatch({ control, name: 'pickupDate' })
+  const payment = useWatch({ control, name: 'payment' })
 
   useEffect(() => {
     getJson<Location[]>('/api/locations')
       .then(setLocations)
       .catch(() => setSubmitError("The shops couldn't be loaded. Please reload the page."))
-  }, [])
+    // Card payments are offered when the server has Stripe set up; then they're the default
+    getJson<{ card: boolean }>('/api/payment-options')
+      .then(({ card }) => {
+        setCardPayments(card)
+        if (card) setValue('payment', 'card')
+      })
+      .catch(() => {})
+  }, [setValue])
 
   // Pickup times depend on the shop, so they're loaded when one is chosen
   async function loadSlots(id: string) {
@@ -97,7 +148,15 @@ export function CheckoutPage() {
         locationId: form.locationId,
         pickupAt: form.pickupAt,
         items: items.map(({ productId, quantity }) => ({ productId, quantity })),
+        payment: form.payment,
       })
+      // Card: pay on Stripe's page, which comes back to the confirmation page. The cart is kept
+      // until then, in case the customer cancels.
+      if (order.checkoutUrl) {
+        setRedirecting(true)
+        window.location.assign(order.checkoutUrl)
+        return
+      }
       setPlaced(true)
       clear()
       navigate('/order/confirmation', { replace: true, state: { order } })
@@ -184,7 +243,9 @@ export function CheckoutPage() {
           <span>Total</span>
           <span className="tabular-nums">{formatPrice(cartTotal(items))}</span>
         </p>
-        <p className="mt-1 text-sm text-taupe">You pay when you pick up your order.</p>
+        <p className="mt-1 text-sm text-taupe">
+          {cardPayments ? 'Pay now online, or when you pick up your order.' : 'You pay when you pick up your order.'}
+        </p>
         <Link to="/" className="mt-4 inline-block font-semibold text-orange underline">
           Add more from the menu
         </Link>
@@ -194,14 +255,20 @@ export function CheckoutPage() {
         <h2 id="details-title" className="font-hand text-3xl text-orange">
           Pickup details
         </h2>
+        <p className="-mt-3 text-sm text-taupe">
+          Fields marked with <span className="font-semibold text-red">*</span> are required.
+        </p>
 
         <fieldset>
-          <legend className="mb-1 font-semibold">Shop</legend>
+          <legend className="mb-1 font-semibold">
+            Shop
+            <RequiredMark />
+          </legend>
           <div className="space-y-2">
             {locations.map((location) => (
               <label
                 key={location.id}
-                className="flex cursor-pointer items-start gap-3 rounded-md border-2 border-beige bg-white p-3 has-checked:border-orange"
+                className={`flex cursor-pointer items-start gap-3 rounded-md border-2 p-3 has-checked:border-orange ${errors.locationId ? 'border-red bg-red-50' : 'border-beige bg-white'}`}
               >
                 <input
                   type="radio"
@@ -212,6 +279,7 @@ export function CheckoutPage() {
                         setSubmitError("Pickup times couldn't be loaded. Please try again."),
                       ),
                   })}
+                  required
                   aria-describedby={describedBy('locationId')}
                   className="mt-1 accent-orange"
                 />
@@ -224,19 +292,16 @@ export function CheckoutPage() {
               </label>
             ))}
           </div>
-          {errors.locationId && (
-            <p id="locationId-error" className="mt-1 text-sm font-semibold text-med-brown">
-              {errors.locationId.message}
-            </p>
-          )}
+          <FieldError id="locationId" message={errors.locationId?.message} />
         </fieldset>
 
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field id="pickupDate" label="Day" error={errors.pickupDate?.message}>
+          <Field id="pickupDate" label="Day" error={errors.pickupDate?.message} required>
             <select
               id="pickupDate"
               {...register('pickupDate', { onChange: () => setValue('pickupAt', '') })}
               disabled={days.length === 0}
+              required
               aria-invalid={!!errors.pickupDate}
               aria-describedby={describedBy('pickupDate')}
               className={inputClass}
@@ -249,11 +314,12 @@ export function CheckoutPage() {
               ))}
             </select>
           </Field>
-          <Field id="pickupAt" label="Time" error={errors.pickupAt?.message}>
+          <Field id="pickupAt" label="Time" error={errors.pickupAt?.message} required>
             <select
               id="pickupAt"
               {...register('pickupAt')}
               disabled={slots.length === 0}
+              required
               aria-invalid={!!errors.pickupAt}
               aria-describedby={describedBy('pickupAt')}
               className={inputClass}
@@ -269,33 +335,36 @@ export function CheckoutPage() {
         </div>
         <p className="-mt-3 text-sm text-taupe">Order at least an hour ahead, up to a week in advance.</p>
 
-        <Field id="customerName" label="Name" error={errors.customerName?.message}>
+        <Field id="customerName" label="Name" error={errors.customerName?.message} required>
           <input
             id="customerName"
             autoComplete="name"
             {...register('customerName')}
+            required
             aria-invalid={!!errors.customerName}
             aria-describedby={describedBy('customerName')}
             className={inputClass}
           />
         </Field>
-        <Field id="email" label="Email" error={errors.email?.message}>
+        <Field id="email" label="Email" error={errors.email?.message} required>
           <input
             id="email"
             type="email"
             autoComplete="email"
             {...register('email')}
+            required
             aria-invalid={!!errors.email}
             aria-describedby={describedBy('email')}
             className={inputClass}
           />
         </Field>
-        <Field id="phone" label="Phone" error={errors.phone?.message}>
+        <Field id="phone" label="Phone" error={errors.phone?.message} required>
           <input
             id="phone"
             type="tel"
             autoComplete="tel"
             {...register('phone')}
+            required
             aria-invalid={!!errors.phone}
             aria-describedby={describedBy('phone')}
             className={inputClass}
@@ -312,18 +381,59 @@ export function CheckoutPage() {
           />
         </Field>
 
+        {cardPayments && (
+          <fieldset>
+            <legend className="mb-1 font-semibold">Payment</legend>
+            <div className="grid gap-2 sm:grid-cols-2">
+              {(
+                [
+                  ['card', 'Pay now online'],
+                  ['pickup', 'Pay at pickup'],
+                ] as const
+              ).map(([value, label]) => (
+                <label
+                  key={value}
+                  className="flex cursor-pointer items-center gap-3 rounded-md border-2 border-beige bg-white p-3 has-checked:border-orange"
+                >
+                  <input type="radio" value={value} {...register('payment')} className="accent-orange" />
+                  <span className="font-semibold">{label}</span>
+                </label>
+              ))}
+            </div>
+            {payment === 'card' && (
+              <p className="mt-1 text-sm text-taupe">
+                You'll pay on Stripe's secure page. This is a demo in test mode: use the card number 4242 4242 4242
+                4242, any future date and any CVC.
+              </p>
+            )}
+          </fieldset>
+        )}
+
+        {paymentCancelled && !submitError && (
+          <p role="status" className="rounded-md border-2 border-beige bg-white p-3">
+            The payment was cancelled, and nothing was charged. Your cart is still here, so you can try again or
+            choose to pay at pickup.
+          </p>
+        )}
+
         {submitError && (
-          <p role="alert" className="rounded-md border-2 border-med-brown bg-white p-3 font-semibold text-med-brown">
+          <p role="alert" className="rounded-md border-2 border-red bg-red-50 p-3 font-semibold text-red">
             {submitError}
           </p>
         )}
 
         <button
           type="submit"
-          disabled={isSubmitting}
+          disabled={isSubmitting || redirecting}
           className="w-full rounded-full bg-orange px-6 py-3 text-lg font-semibold text-cream hover:bg-med-brown focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange disabled:opacity-60"
         >
-          {isSubmitting ? 'Sending your order…' : `Place order · ${formatPrice(cartTotal(items))}`}
+          {redirecting
+            ? 'Opening the payment page…'
+            : isSubmitting
+              ? 'Sending your order…'
+              : payment === 'card'
+                ? `Pay ${formatPrice(cartTotal(items))}`
+                : `Place order · ${formatPrice(cartTotal(items))}`}
         </button>
       </form>
     </div>

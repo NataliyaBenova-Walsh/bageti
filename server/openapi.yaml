@@ -17,6 +17,8 @@ tags:
   - name: Menu
   - name: Shops
   - name: Orders
+  - name: Payments
+    description: Card payments with Stripe Checkout (test mode on the demo)
   - name: Auth
   - name: Admin
     description: Staff and admins. The public demo login has the staff role.
@@ -131,8 +133,12 @@ paths:
     post:
       summary: Place an order
       description: |
-        Saved as "pay at pickup". The server prices the order from the database; prices sent by the client
-        are ignored. Repeated products are merged. Limited to 10 orders per visitor every 15 minutes.
+        The server prices the order from the database; prices sent by the client are ignored. Repeated
+        products are merged. Limited to 10 orders per visitor every 15 minutes.
+
+        With `"payment": "card"`, the order waits for payment (`AWAITING_PAYMENT`) and the response has a
+        `checkoutUrl`, Stripe's payment page. Staff see the order once Stripe reports it paid. Unpaid orders
+        are cancelled when the payment page expires, after 35 minutes.
       tags: [Orders]
       requestBody:
         required: true
@@ -146,7 +152,9 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/OrderConfirmation' }
         '400':
-          description: Invalid details, unknown shop or product, or a pickup time that isn't bookable
+          description: |
+            Invalid details, unknown shop or product, a pickup time that isn't bookable, or card payment
+            when it isn't available
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Error' }
@@ -163,6 +171,78 @@ paths:
                         type: array
                         items: { type: integer }
         '429': { $ref: '#/components/responses/TooManyRequests' }
+        '502':
+          description: Stripe's payment page couldn't be opened. No order is saved.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /api/payment-options:
+    get:
+      summary: Ways to pay
+      description: '`card` is false when the server has no Stripe key; then orders can only be paid at pickup.'
+      tags: [Payments]
+      responses:
+        '200':
+          description: Payment options
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  card: { type: boolean }
+
+  /api/checkout-sessions/{id}:
+    get:
+      summary: The order for a Stripe payment
+      description: |
+        Stripe sends the customer back to the shop with the session id, which the confirmation page uses
+        to show the order. If Stripe reports the session paid before the webhook arrives, the order is
+        marked paid here.
+      tags: [Payments]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, example: cs_test_a1B2c3 }
+      responses:
+        '200':
+          description: The order
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/OrderConfirmation' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /api/stripe/webhook:
+    post:
+      summary: Payment events from Stripe
+      description: |
+        Called by Stripe, not by the shop. The `Stripe-Signature` header must match the body.
+        `checkout.session.completed` and `checkout.session.async_payment_succeeded` mark the order paid;
+        `checkout.session.expired` and `checkout.session.async_payment_failed` cancel it.
+      tags: [Payments]
+      parameters:
+        - name: Stripe-Signature
+          in: header
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: A Stripe event
+      responses:
+        '200':
+          description: The event was received
+        '400':
+          description: Missing or wrong signature
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '503':
+          description: Card payments aren't set up on this server
 
   /api/auth/login:
     post:
@@ -441,6 +521,11 @@ components:
       type: string
       enum: [NEW, PREPARING, READY, PICKED_UP, CANCELLED]
 
+    PaymentStatus:
+      type: string
+      enum: [PAY_AT_PICKUP, AWAITING_PAYMENT, PAID]
+      description: AWAITING_PAYMENT is a card order whose payment isn't finished
+
     NewOrder:
       type: object
       required: [customerName, email, phone, locationId, pickupAt, items]
@@ -465,6 +550,11 @@ components:
             properties:
               productId: { type: integer, example: 13 }
               quantity: { type: integer, minimum: 1, maximum: 20, example: 2 }
+        payment:
+          type: string
+          enum: [pickup, card]
+          default: pickup
+          description: Pay at the counter, or now on Stripe's payment page (card and other methods set in the Stripe Dashboard)
 
     OrderItem:
       type: object
@@ -485,11 +575,14 @@ components:
             name: { type: string }
             address: { type: string }
         pickupAt: { type: string, format: date-time }
-        paymentStatus: { type: string, enum: [PAY_AT_PICKUP, PAID] }
+        paymentStatus: { $ref: '#/components/schemas/PaymentStatus' }
         totalCents: { type: integer, example: 10800 }
         items:
           type: array
           items: { $ref: '#/components/schemas/OrderItem' }
+        checkoutUrl:
+          type: string
+          description: Only for card orders, just placed. Send the customer here to pay.
 
     AdminOrder:
       type: object
@@ -508,7 +601,8 @@ components:
             name: { type: string }
         pickupAt: { type: string, format: date-time }
         status: { $ref: '#/components/schemas/OrderStatus' }
-        paymentStatus: { type: string, enum: [PAY_AT_PICKUP, PAID] }
+        paymentStatus: { $ref: '#/components/schemas/PaymentStatus' }
+        stripeSessionId: { type: [string, 'null'], description: Stripe Checkout session, for card orders }
         totalCents: { type: integer }
         createdAt: { type: string, format: date-time }
         updatedAt: { type: string, format: date-time }

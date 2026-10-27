@@ -25,6 +25,14 @@ services:
         sync: false
       - key: ADMIN_PASSWORD
         sync: false
+      # Card payments (Stripe test mode): the secret key, the webhook's signing secret,
+      # and the shop's address for Stripe to send customers back to (https://bageti.vercel.app)
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false
+      - key: CLIENT_URL
+        sync: false
       # The public demo login shown in the README (staff role: orders and sold-out only)
       - key: DEMO_EMAIL
         value: demo@example.com

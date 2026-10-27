@@ -40,7 +40,8 @@ adminRouter.get('/admin/orders', staffOrAdmin, async (req, res) => {
   const { date = shopToday(new Date()), status, location } = parsed.data
   const { start, end } = shopDayRange(date)
   const orders = await prisma.order.findMany({
-    where: { pickupAt: { gte: start, lt: end }, status, locationId: location },
+    // Card orders only reach the board once they're paid
+    where: { pickupAt: { gte: start, lt: end }, status, locationId: location, paymentStatus: { not: 'AWAITING_PAYMENT' } },
     orderBy: [{ pickupAt: 'asc' }, { id: 'asc' }],
     include: {
       location: { select: { id: true, name: true } },

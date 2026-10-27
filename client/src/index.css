@@ -8,6 +8,8 @@
   --color-taupe: #7d6252;
   --color-cream: #fff3d9;
   --color-green: #697457;
+  /* Form errors and required marks: 5.9:1 on cream */
+  --color-red: #b91c1c;
 
   --font-sans: "Fira Sans Condensed", sans-serif;
   --font-hand: "Kalam", cursive;

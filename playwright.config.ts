@@ -35,6 +35,8 @@ export default defineConfig({
         ADMIN_PASSWORD: 'admin-password',
         DEMO_EMAIL: STAFF_LOGIN.email,
         DEMO_PASSWORD: STAFF_LOGIN.password,
+        // Pay at pickup only, as in CI, even if server/.env has a Stripe key
+        STRIPE_SECRET_KEY: '',
       },
       reuseExistingServer: false,
     },

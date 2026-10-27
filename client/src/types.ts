@@ -16,14 +16,19 @@ export type Location = { id: string; name: string; address: string; opensAt: str
 // Pickup times for one Swedish date, as UTC ISO strings
 export type PickupDay = { date: string; slots: string[] }
 
+// AWAITING_PAYMENT: a card order whose payment on Stripe isn't finished
+export type PaymentStatus = 'PAY_AT_PICKUP' | 'AWAITING_PAYMENT' | 'PAID'
+
 export type OrderConfirmation = {
   code: string
   customerName: string
   location: { name: string; address: string }
   pickupAt: string
-  paymentStatus: 'PAY_AT_PICKUP' | 'PAID'
+  paymentStatus: PaymentStatus
   totalCents: number
   items: { productId: number; name: string; unitPriceCents: number; quantity: number }[]
+  // Card orders: Stripe's payment page
+  checkoutUrl?: string
 }
 
 export type OrderStatus = 'NEW' | 'PREPARING' | 'READY' | 'PICKED_UP' | 'CANCELLED'
@@ -39,7 +44,7 @@ export type AdminOrder = {
   note: string | null
   pickupAt: string
   status: OrderStatus
-  paymentStatus: 'PAY_AT_PICKUP' | 'PAID'
+  paymentStatus: PaymentStatus
   totalCents: number
   createdAt: string
   location: { id: string; name: string }

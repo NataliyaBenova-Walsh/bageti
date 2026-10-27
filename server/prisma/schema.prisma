@@ -51,26 +51,30 @@ enum OrderStatus {
 
 enum PaymentStatus {
   PAY_AT_PICKUP
+  // Card chosen, and the customer hasn't finished paying on Stripe yet
+  AWAITING_PAYMENT
   PAID
 }
 
 model Order {
-  id            Int           @id @default(autoincrement())
+  id              Int           @id @default(autoincrement())
   // Short reference shown to the customer, e.g. "FK-7Q2M"
-  code          String        @unique
-  customerName  String
-  email         String
-  phone         String
-  note          String?
-  location      Location      @relation(fields: [locationId], references: [id])
-  locationId    String
-  pickupAt      DateTime
-  status        OrderStatus   @default(NEW)
-  paymentStatus PaymentStatus @default(PAY_AT_PICKUP)
-  totalCents    Int
-  items         OrderItem[]
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
+  code            String        @unique
+  customerName    String
+  email           String
+  phone           String
+  note            String?
+  location        Location      @relation(fields: [locationId], references: [id])
+  locationId      String
+  pickupAt        DateTime
+  status          OrderStatus   @default(NEW)
+  paymentStatus   PaymentStatus @default(PAY_AT_PICKUP)
+  // Stripe Checkout session, for orders paid by card
+  stripeSessionId String?       @unique
+  totalCents      Int
+  items           OrderItem[]
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
 
   @@index([locationId, pickupAt])
 }

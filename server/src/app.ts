@@ -10,6 +10,7 @@ import { authRouter } from './routes/auth.js'
 import { locationsRouter } from './routes/locations.js'
 import { menuRouter } from './routes/menu.js'
 import { ordersRouter } from './routes/orders.js'
+import { stripeWebhook } from './routes/stripe-webhook.js'
 
 // The Express app, without starting it, so tests can send requests to it directly
 export const app = express()
@@ -22,6 +23,9 @@ app.set('trust proxy', 2)
 // CLIENT_ORIGIN can list several origins separated by commas.
 const clientOrigins = process.env.CLIENT_ORIGIN?.split(',').map((origin) => origin.trim())
 if (clientOrigins) app.use(cors({ origin: clientOrigins }))
+
+// Before express.json(): Stripe's signature is checked against the raw body
+app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), stripeWebhook)
 
 app.use(express.json())
 app.use(cookieParser())

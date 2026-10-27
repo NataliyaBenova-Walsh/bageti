@@ -20,6 +20,10 @@ export default defineConfig({
       ADMIN_PASSWORD: 'admin-password',
       DEMO_EMAIL: 'demo@test.example',
       DEMO_PASSWORD: 'demo-password',
+      // Turns card payments on. Tests replace the calls to Stripe, so this key is never used.
+      STRIPE_SECRET_KEY: 'sk_test_not_used',
+      STRIPE_WEBHOOK_SECRET: 'whsec_test_secret',
+      CLIENT_URL: 'http://shop.test',
     },
   },
 })

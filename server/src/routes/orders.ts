@@ -5,6 +5,7 @@ import { z } from 'zod'
 import { prisma } from '../db.js'
 import { Prisma } from '../generated/prisma/client.js'
 import { isPickupAllowed } from '../pickup.js'
+import { createCheckoutSession, markPaid, stripe } from '../stripe.js'
 
 export const ordersRouter = Router()
 
@@ -22,6 +23,8 @@ const orderInput = z.object({
     .array(z.object({ productId: z.number().int().positive(), quantity: z.number().int().min(1).max(20) }))
     .min(1, 'Your cart is empty')
     .max(50),
+  // "card" pays now on Stripe's payment page; "pickup" pays at the counter
+  payment: z.enum(['pickup', 'card']).default('pickup'),
 })
 
 // Unambiguous characters only (no 0/O, 1/I/L), so codes are easy to read out at the counter
@@ -83,36 +86,90 @@ ordersRouter.post('/orders', orderLimiter, async (req, res) => {
   }))
   const totalCents = items.reduce((sum, item) => sum + item.unitPriceCents * item.quantity, 0)
 
-  // Codes are random, so retry in the rare case one is already taken
+  if (input.payment === 'card' && !stripe) {
+    res.status(400).json({ error: "Card payments aren't available right now. Please choose to pay at pickup." })
+    return
+  }
+
+  const order = await createOrder({
+    customerName: input.customerName,
+    email: input.email,
+    phone: input.phone,
+    note: input.note || null,
+    locationId: location.id,
+    pickupAt,
+    totalCents,
+    paymentStatus: input.payment === 'card' ? 'AWAITING_PAYMENT' : 'PAY_AT_PICKUP',
+    items: { create: items },
+  })
+
+  if (input.payment === 'pickup') {
+    res.status(201).json(orderConfirmation(order))
+    return
+  }
+
+  // Card: open a Stripe payment page. The order stays hidden from staff until it's paid.
+  let session
+  try {
+    session = await createCheckoutSession(order)
+  } catch (error) {
+    console.error(error)
+    await prisma.order.delete({ where: { id: order.id } })
+    res.status(502).json({ error: "The payment page couldn't be opened. Please try again, or choose to pay at pickup." })
+    return
+  }
+  await prisma.order.update({ where: { id: order.id }, data: { stripeSessionId: session.id } })
+  res.status(201).json({ ...orderConfirmation(order), checkoutUrl: session.url })
+})
+
+const withDetails = { items: true, location: true } satisfies Prisma.OrderInclude
+
+// Codes are random, so retry in the rare case one is already taken
+async function createOrder(data: Omit<Prisma.OrderUncheckedCreateInput, 'code'>) {
   for (let attempt = 0; attempt < 5; attempt++) {
     try {
-      const order = await prisma.order.create({
-        data: {
-          code: orderCode(),
-          customerName: input.customerName,
-          email: input.email,
-          phone: input.phone,
-          note: input.note || null,
-          locationId: location.id,
-          pickupAt,
-          totalCents,
-          items: { create: items },
-        },
-        include: { items: true },
-      })
-      res.status(201).json({
-        code: order.code,
-        customerName: order.customerName,
-        location: { name: location.name, address: location.address },
-        pickupAt: order.pickupAt,
-        paymentStatus: order.paymentStatus,
-        totalCents: order.totalCents,
-        items: order.items.map(({ productId, name, unitPriceCents, quantity }) => ({ productId, name, unitPriceCents, quantity })),
-      })
-      return
+      return await prisma.order.create({ data: { ...data, code: orderCode() }, include: withDetails })
     } catch (error) {
       if (!(error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002')) throw error
     }
   }
   throw new Error('Could not create a unique order code')
+}
+
+// What the customer sees after ordering
+export function orderConfirmation(order: Prisma.OrderGetPayload<{ include: typeof withDetails }>) {
+  return {
+    code: order.code,
+    customerName: order.customerName,
+    location: { name: order.location.name, address: order.location.address },
+    pickupAt: order.pickupAt,
+    paymentStatus: order.paymentStatus,
+    totalCents: order.totalCents,
+    items: order.items.map(({ productId, name, unitPriceCents, quantity }) => ({ productId, name, unitPriceCents, quantity })),
+  }
+}
+
+// After paying, Stripe sends the customer back with the session id, which is long and secret,
+// so it's safe to show the order to whoever has it
+ordersRouter.get('/checkout-sessions/:id', async (req, res) => {
+  const where = { stripeSessionId: req.params.id }
+  let order = await prisma.order.findUnique({ where, include: withDetails })
+  if (!order) {
+    res.status(404).json({ error: 'Order not found' })
+    return
+  }
+  // The webhook usually marks the order paid first, but the customer can arrive before it
+  if (order.paymentStatus === 'AWAITING_PAYMENT' && order.status === 'NEW' && stripe) {
+    const session = await stripe.checkout.sessions.retrieve(req.params.id)
+    if (session.payment_status === 'paid') {
+      await markPaid(session.id)
+      order = await prisma.order.findUniqueOrThrow({ where, include: withDetails })
+    }
+  }
+  res.json(orderConfirmation(order))
+})
+
+// Whether the checkout can offer card payments
+ordersRouter.get('/payment-options', (_req, res) => {
+  res.json({ card: stripe !== null })
 })
