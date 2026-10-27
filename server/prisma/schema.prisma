@@ -34,7 +34,7 @@ model Location {
   id        String  @id // slug, e.g. "old-town"
   name      String
   address   String
-  // Opening hours in Sofia local time, "HH:MM". The same every day for now.
+  // Opening hours in Swedish local time (Europe/Stockholm), "HH:MM". The same every day for now.
   opensAt   String
   closesAt  String
   sortOrder Int     @default(0)
