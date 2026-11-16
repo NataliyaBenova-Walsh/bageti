@@ -326,6 +326,30 @@ paths:
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
 
+  /api/admin/orders/events:
+    get:
+      summary: Live feed of order changes
+      description: |
+        A stream of server-sent events for the order board. An `order` event is sent whenever an order
+        on the board is placed, paid by card, or changes status. Its data names the order, its Swedish
+        pickup date and its shop, so a board can reload only when the change is on screen. A comment
+        line is sent every 25 seconds to keep the connection open, and the server ends the stream after
+        an hour; browsers reconnect by themselves (`EventSource`). Staff and admins.
+      tags: [Admin]
+      security:
+        - session: []
+      responses:
+        '200':
+          description: The event stream
+          content:
+            text/event-stream:
+              schema: { type: string }
+              example: |
+                event: order
+                data: {"orderId":42,"date":"2026-10-15","locationId":"riverside"}
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
   /api/admin/orders/{id}:
     patch:
       summary: Change an order's status

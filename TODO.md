@@ -51,4 +51,7 @@ The React + Tailwind client in phase 3 will replace this site, so do the items t
    - [x] **Product photos:** upload to Cloudinary from the products page, and show photos on the menu (Done: admins upload from the products page, straight to Cloudinary with a signature from the API; the menu shows resized photos.)
 5. [x] **Payments:** Stripe Checkout in test mode, plus a webhook that marks orders as paid (Done: customers choose to pay now or at pickup. Card orders stay off the order board until Stripe confirms the payment, and are cancelled if the payment page expires. The confirmation page also checks with Stripe, in case the customer is back before the webhook.)
 6. [ ] **Realtime and extras:** live order feed for staff (WebSockets or SSE), confirmation email, sales dashboard (Recharts)
+   - [x] **Live order feed:** server-sent events tell open order boards when an order is placed, paid or changes status, and the board falls back to a 30-second refresh while the feed is down
+   - [ ] **Confirmation email**
+   - [ ] **Sales dashboard**
 7. [x] **Quality:** Vitest API tests, a Playwright end-to-end test for the order flow, OpenAPI docs, a README with an architecture diagram and a demo admin login (Done: Vitest and Supertest API tests on a separate test database, a Playwright test from order to staff, OpenAPI docs at /api/docs with a test that keeps them in sync with the routes, CI with a Postgres service, and a README with an architecture diagram, screenshots and a public demo login with a new staff role.)

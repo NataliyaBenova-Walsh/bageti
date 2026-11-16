@@ -4,6 +4,7 @@ import { rateLimit } from 'express-rate-limit'
 import { z } from 'zod'
 import { prisma } from '../db.js'
 import { Prisma } from '../generated/prisma/client.js'
+import { orderChanged } from '../order-events.js'
 import { isPickupAllowed } from '../pickup.js'
 import { createCheckoutSession, markPaid, stripe } from '../stripe.js'
 
@@ -104,6 +105,7 @@ ordersRouter.post('/orders', orderLimiter, async (req, res) => {
   })
 
   if (input.payment === 'pickup') {
+    orderChanged(order)
     res.status(201).json(orderConfirmation(order))
     return
   }

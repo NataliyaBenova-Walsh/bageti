@@ -35,7 +35,11 @@ const PAYMENT_LABEL: Record<PaymentStatus, string> = {
 
 const FILTERS: (OrderStatus | 'ALL')[] = ['ALL', 'NEW', 'PREPARING', 'READY', 'PICKED_UP', 'CANCELLED']
 
+// Orders arrive through the live feed. Without it (e.g. while it reconnects), the board
+// reloads on a timer instead.
 const REFRESH_SECONDS = 30
+
+type OrderChange = { orderId: number; date: string; locationId: string }
 
 export function OrdersPage() {
   const [date, setDate] = useState(shopToday)
@@ -45,6 +49,7 @@ export function OrdersPage() {
   const [orders, setOrders] = useState<AdminOrder[] | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [busyId, setBusyId] = useState<number | null>(null)
+  const [live, setLive] = useState(false)
 
   // Numbers each request, so an older one that answers late (e.g. for the previous day) is ignored
   const latestRequest = useRef(0)
@@ -67,15 +72,40 @@ export function OrdersPage() {
     getJson<Location[]>('/api/locations').then(setLocations).catch(() => {})
   }, [])
 
-  // Reload when the filters change, and every 30 seconds to pick up new orders
+  // Reload when the filters change
   useEffect(() => {
     const first = setTimeout(load, 0)
-    const timer = setInterval(load, REFRESH_SECONDS * 1000)
-    return () => {
-      clearTimeout(first)
-      clearInterval(timer)
-    }
+    return () => clearTimeout(first)
   }, [load])
+
+  // The live feed: reload when an order for the day and shop on screen changes
+  const latest = useRef({ load, date, locationId })
+  useEffect(() => {
+    latest.current = { load, date, locationId }
+  }, [load, date, locationId])
+
+  useEffect(() => {
+    const source = new EventSource('/api/admin/orders/events')
+    source.onopen = () => {
+      setLive(true)
+      // Catch anything that changed while the feed was down
+      latest.current.load()
+    }
+    source.onerror = () => setLive(false)
+    source.addEventListener('order', (event) => {
+      const change = JSON.parse(event.data) as OrderChange
+      const { date, locationId, load } = latest.current
+      if (change.date === date && (!locationId || change.locationId === locationId)) load()
+    })
+    return () => source.close()
+  }, [])
+
+  // While the feed is down, reload every 30 seconds instead
+  useEffect(() => {
+    if (live) return
+    const timer = setInterval(load, REFRESH_SECONDS * 1000)
+    return () => clearInterval(timer)
+  }, [live, load])
 
   async function changeStatus(order: AdminOrder, status: OrderStatus) {
     if (status === 'CANCELLED') {
@@ -102,7 +132,19 @@ export function OrdersPage() {
       <div className="mb-4 flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="font-hand text-4xl text-orange">Orders</h1>
-          <p className="text-sm text-taupe">Pickups on {formatDate(`${date}T12:00:00Z`)}. Updates every 30 seconds.</p>
+          <p className="text-sm text-taupe">
+            Pickups on {formatDate(`${date}T12:00:00Z`)}.{' '}
+            <span role="status">
+              {live ? (
+                <>
+                  <span className="mr-1 inline-block size-2 rounded-full bg-green" aria-hidden="true" />
+                  Live: new orders appear at once.
+                </>
+              ) : (
+                'Updates every 30 seconds.'
+              )}
+            </span>
+          </p>
         </div>
         <div className="flex flex-wrap gap-3">
           <label className="text-sm font-semibold">

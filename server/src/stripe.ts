@@ -1,5 +1,6 @@
 import Stripe from 'stripe'
 import { prisma } from './db.js'
+import { orderChanged } from './order-events.js'
 
 // Card payments are only offered when a Stripe key is set (a test key, sk_test_…, for the demo)
 export const stripe = process.env.STRIPE_SECRET_KEY ? new Stripe(process.env.STRIPE_SECRET_KEY) : null
@@ -36,11 +37,14 @@ export function createCheckoutSession(order: OrderToPay) {
 }
 
 // Both only change orders still waiting for payment, so repeated or late webhooks do nothing
-export function markPaid(sessionId: string) {
-  return prisma.order.updateMany({
+export async function markPaid(sessionId: string) {
+  const result = await prisma.order.updateMany({
     where: { stripeSessionId: sessionId, paymentStatus: 'AWAITING_PAYMENT', status: 'NEW' },
     data: { paymentStatus: 'PAID' },
   })
+  // Now paid, the order appears on the staff board
+  if (result.count > 0) orderChanged(await prisma.order.findUniqueOrThrow({ where: { stripeSessionId: sessionId } }))
+  return result
 }
 
 // Gives the customer their money back for a paid card order. The idempotency key makes

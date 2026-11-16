@@ -45,6 +45,28 @@ test('a customer orders, and staff start preparing the order', async ({ page, br
   await expect(card).toContainText('Preparing')
   await expect(card.getByRole('button', { name: 'Mark ready' })).toBeVisible()
 
+  // Live feed: another order placed now appears on the open board without a reload,
+  // well before the 30-second refresh
+  await expect(staff.getByText('Live: new orders appear at once.')).toBeVisible()
+  const location = await (await staff.request.get('/api/locations')).json()
+  const gothenburg = location.find((shop: { name: string }) => shop.name === 'Fika Gothenburg')
+  const days = await (await staff.request.get(`/api/locations/${gothenburg.id}/pickup-slots`)).json()
+  const sameDay = days.find((d: { date: string }) => d.date === pickupDate)
+  const menu = await (await staff.request.get('/api/categories')).json()
+  const croissant = menu.flatMap((c: { products: { id: number; name: string }[] }) => c.products).find((p: { name: string }) => p.name === 'Croissant')
+  const placed = await staff.request.post('/api/orders', {
+    data: {
+      customerName: 'Erik Johansson',
+      email: 'erik@example.com',
+      phone: '+46 70 555 01 02',
+      locationId: gothenburg.id,
+      pickupAt: sameDay.slots.at(-1),
+      items: [{ productId: croissant.id, quantity: 1 }],
+    },
+  })
+  expect(placed.status()).toBe(201)
+  await expect(staff.getByRole('listitem').filter({ hasText: (await placed.json()).code })).toContainText('Erik Johansson', { timeout: 5000 })
+
   // Staff can't edit product details
   await staff.getByRole('link', { name: 'Products' }).click()
   await expect(staff.getByRole('heading', { name: 'Products' })).toBeVisible()

@@ -44,7 +44,7 @@ The demo login has the **staff** role: it can see all orders, move them through 
 
 **Staff and admins**
 
-- **Order board:** one day's pickups, filtered by shop and status, refreshed every 30 seconds. Orders move New → Preparing → Ready → Picked up, one step at a time, and can be cancelled until they're picked up.
+- **Order board:** one day's pickups, filtered by shop and status. New orders and changes appear at once through a live feed (server-sent events); if the feed drops, the board refreshes every 30 seconds until it's back. Orders move New → Preparing → Ready → Picked up, one step at a time, and can be cancelled until they're picked up.
 - **Products:** mark products sold out or back in stock. Admins can also add products, change their name, description, price and category, and upload photos.
 
 **Rules the server enforces**
@@ -122,9 +122,9 @@ npm run db:test -w server   # start the test database once, and put its URL in T
 npm test                    # API tests, then the end-to-end test
 ```
 
-- **API tests** (`server/src/*.test.ts`, Vitest and Supertest): the menu, pickup times across clock changes, placing orders (pricing, validation, sold-out items), card payments and refunds (Stripe calls replaced, webhooks signed with a test secret), login, and what staff and admins may do. They empty and refill the test database first, and refuse to run against anything but a local database.
+- **API tests** (`server/src/*.test.ts`, Vitest and Supertest): the menu, pickup times across clock changes, placing orders (pricing, validation, sold-out items), card payments and refunds (Stripe calls replaced, webhooks signed with a test secret), the live order feed, login, and what staff and admins may do. They empty and refill the test database first, and refuse to run against anything but a local database.
 - **Documentation test:** checks that every route in the code is in `openapi.yaml`, and that every documented route exists.
-- **End-to-end test** (`e2e/`, Playwright): a customer orders in a real browser, then a staff member logs in, finds the order and starts preparing it. It runs its own API and client on ports 3101 and 5174, so it doesn't disturb `npm run dev`.
+- **End-to-end test** (`e2e/`, Playwright): a customer orders in a real browser, then a staff member logs in, finds the order and starts preparing it, then a new order appears on the open board through the live feed. It runs its own API and client on ports 3101 and 5174, so it doesn't disturb `npm run dev`.
 
 GitHub Actions runs the build, lint, API tests and end-to-end test on every push, with a throwaway PostgreSQL database.
 
@@ -171,6 +171,7 @@ server/          Express API
   src/auth.ts      Passwords, sessions and roles
   src/stripe.ts    Stripe Checkout sessions, payment updates and refunds
   src/cloudinary.ts  Signed photo uploads
+  src/order-events.ts  Live feed of order changes for the staff board
   src/routes/      Menu, shops, orders, payments, login and admin routes
   prisma/          Database schema, migrations and seed script
   openapi.yaml     API documentation

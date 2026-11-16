@@ -2,6 +2,7 @@ import { Router } from 'express'
 import { z } from 'zod'
 import { requireRole } from '../auth.js'
 import { cloudinary, isProductImageUrl, signProductUpload } from '../cloudinary.js'
+import { onOrderChange, orderChanged } from '../order-events.js'
 import { prisma } from '../db.js'
 import type { OrderStatus, Prisma } from '../generated/prisma/client.js'
 import { shopDayRange, shopToday } from '../pickup.js'
@@ -53,6 +54,35 @@ adminRouter.get('/admin/orders', staffOrAdmin, async (req, res) => {
   res.json(orders)
 })
 
+// A live feed for the order board (server-sent events): an "order" event whenever an order on
+// the board is placed, paid or changes status. The data says which order, day and shop, so a board
+// showing another day can ignore it. Browsers reconnect by themselves if the connection drops.
+const HEARTBEAT_MS = 25 * 1000
+// Ending the stream now and then makes the browser reconnect, which checks the login again
+const STREAM_MAX_MS = 60 * 60 * 1000
+
+adminRouter.get('/admin/orders/events', staffOrAdmin, (req, res) => {
+  res.set({
+    'Content-Type': 'text/event-stream',
+    'Cache-Control': 'no-cache, no-transform',
+    Connection: 'keep-alive',
+    // Asks proxies not to hold events back
+    'X-Accel-Buffering': 'no',
+  })
+  res.flushHeaders()
+  res.write('retry: 5000\n\n')
+
+  const stop = onOrderChange((change) => res.write(`event: order\ndata: ${JSON.stringify(change)}\n\n`))
+  // A comment line now and then, so proxies don't close a quiet connection
+  const heartbeat = setInterval(() => res.write(': ping\n\n'), HEARTBEAT_MS)
+  const maxAge = setTimeout(() => res.end(), STREAM_MAX_MS)
+  req.on('close', () => {
+    stop()
+    clearInterval(heartbeat)
+    clearTimeout(maxAge)
+  })
+})
+
 adminRouter.patch('/admin/orders/:id', staffOrAdmin, async (req, res) => {
   const id = Number(req.params.id)
   const parsed = z.object({ status: z.enum(STATUSES) }).safeParse(req.body)
@@ -90,9 +120,11 @@ adminRouter.patch('/admin/orders/:id', staffOrAdmin, async (req, res) => {
       return
     }
     await prisma.order.update({ where: { id }, data: { paymentStatus: 'REFUNDED' } })
+    orderChanged(order)
     res.json({ id, status: next, paymentStatus: 'REFUNDED' })
     return
   }
+  orderChanged(order)
   res.json({ id, status: next, paymentStatus: order.paymentStatus })
 })
 
