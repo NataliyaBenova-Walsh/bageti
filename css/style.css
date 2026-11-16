@@ -111,6 +111,7 @@ header {
     display: inline-block;
     margin-top: 16px;
     padding: 10px 24px;
+    border: 2px solid transparent;
     border-radius: 999px;
     background-color: var(--clr-orange);
     color: var(--clr-cream);
@@ -118,6 +119,24 @@ header {
 }
 .btn:hover {
     background-color: var(--clr-med-brown);
+}
+
+.btn-row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0 12px;
+}
+
+/* Less prominent than "Order for pickup": an outline in the same colour */
+.btn-secondary {
+    background-color: transparent;
+    border-color: var(--clr-orange);
+    color: var(--clr-orange);
+}
+.btn-secondary:hover {
+    background-color: var(--clr-orange);
+    color: var(--clr-cream);
 }
 
 .small-div {
