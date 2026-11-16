@@ -1,6 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { ApiError, getJson, patchJson, postJson } from '../api'
-import { formatPrice } from '../format'
+import { formatPrice, productImage } from '../format'
+import { uploadProductImage } from './uploadProductImage'
 import { useAdminUser } from './useAdminUser'
 import type { Category, Product } from '../types'
 
@@ -21,7 +22,53 @@ function errorMessage(err: unknown): string {
     const firstFieldError = Object.values(err.body.fields ?? {}).flat()[0]
     return firstFieldError ?? err.body.error ?? 'Something went wrong.'
   }
+  if (err instanceof Error) return err.message
   return 'Something went wrong. Please try again.'
+}
+
+// The product's photo, or an empty square, with buttons to add, change or remove it (admins only)
+function ProductPhoto({ product, canEdit, busy, onUpload, onRemove }: {
+  product: Product
+  canEdit: boolean
+  busy: boolean
+  onUpload: (file: File) => void
+  onRemove: () => void
+}) {
+  const inputId = `photo-${product.id}`
+  return (
+    <div className="flex shrink-0 items-center gap-2">
+      {product.imageUrl ? (
+        <img src={productImage(product.imageUrl, 56, 56)} alt="" width={56} height={56} className="size-14 rounded-md object-cover" />
+      ) : (
+        <div className="size-14 rounded-md border-2 border-dashed border-beige" aria-hidden="true" />
+      )}
+      {canEdit && (
+        <div className="flex flex-col items-start text-sm">
+          <input
+            id={inputId}
+            type="file"
+            accept="image/*"
+            disabled={busy}
+            className="sr-only"
+            onChange={(e) => {
+              const file = e.target.files?.[0]
+              e.target.value = ''
+              if (file) onUpload(file)
+            }}
+          />
+          <label htmlFor={inputId} className={`cursor-pointer text-orange underline ${busy ? 'pointer-events-none opacity-60' : ''}`}>
+            {product.imageUrl ? 'Change photo' : 'Add photo'}
+            <span className="sr-only"> for {product.name}</span>
+          </label>
+          {product.imageUrl && (
+            <button type="button" disabled={busy} onClick={onRemove} className="text-med-brown underline disabled:opacity-60">
+              Remove<span className="sr-only"> photo of {product.name}</span>
+            </button>
+          )}
+        </div>
+      )}
+    </div>
+  )
 }
 
 function ProductForm({
@@ -147,6 +194,17 @@ export function ProductsPage() {
       `${product.name} is now ${product.available ? 'sold out' : 'back in stock'}.`,
     )
 
+  const uploadPhoto = (product: Product, file: File) =>
+    save(async () => {
+      const imageUrl = await uploadProductImage(file)
+      await patchJson(`/api/admin/products/${product.id}`, { imageUrl })
+    }, `Photo saved for ${product.name}.`)
+
+  const removePhoto = (product: Product) => {
+    if (!window.confirm(`Remove the photo of ${product.name} from the menu?`)) return
+    save(() => patchJson(`/api/admin/products/${product.id}`, { imageUrl: null }), `Photo removed from ${product.name}.`)
+  }
+
   function startEdit(product: Product) {
     setEditingId(product.id)
     setEditDraft({
@@ -216,10 +274,19 @@ export function ProductsPage() {
                 </li>
               ) : (
                 <li key={product.id} className="flex flex-wrap items-center justify-between gap-3 py-2">
-                  <div className={product.available ? undefined : 'opacity-60'}>
-                    <span className="font-semibold">{product.name}</span>
-                    <span className="ml-2 tabular-nums">{formatPrice(product.priceCents)}</span>
-                    <div className="text-sm text-taupe">{product.description}</div>
+                  <div className="flex items-center gap-3">
+                    <ProductPhoto
+                      product={product}
+                      canEdit={isAdmin}
+                      busy={busy}
+                      onUpload={(file) => uploadPhoto(product, file)}
+                      onRemove={() => removePhoto(product)}
+                    />
+                    <div className={product.available ? undefined : 'opacity-60'}>
+                      <span className="font-semibold">{product.name}</span>
+                      <span className="ml-2 tabular-nums">{formatPrice(product.priceCents)}</span>
+                      <div className="text-sm text-taupe">{product.description}</div>
+                    </div>
                   </div>
                   <div className="flex items-center gap-3">
                     <button

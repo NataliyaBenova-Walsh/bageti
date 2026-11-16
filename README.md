@@ -34,7 +34,7 @@ The demo login has the **staff** role: it can see all orders, move them through 
 
 **Customers**
 
-- Browse the menu by category, with prices in SEK and sold-out items marked
+- Browse the menu by category, with photos, prices in SEK and sold-out items marked
 - A cart kept in the browser, so it survives a reload
 - Checkout: choose a shop, a day and a 15-minute pickup slot, and enter contact details. Errors are shown next to each field.
 - Pay now by card on Stripe's payment page (test mode: use the card `4242 4242 4242 4242`), or pay at pickup
@@ -45,7 +45,7 @@ The demo login has the **staff** role: it can see all orders, move them through 
 **Staff and admins**
 
 - **Order board:** one day's pickups, filtered by shop and status, refreshed every 30 seconds. Orders move New → Preparing → Ready → Picked up, one step at a time, and can be cancelled until they're picked up.
-- **Products:** mark products sold out or back in stock. Admins can also add products and change their name, description, price and category.
+- **Products:** mark products sold out or back in stock. Admins can also add products, change their name, description, price and category, and upload photos.
 
 **Rules the server enforces**
 
@@ -55,6 +55,7 @@ The demo login has the **staff** role: it can see all orders, move them through 
 - Logins use scrypt password hashes and a signed JWT in an httpOnly cookie. Wrong emails and wrong passwords get the same answer.
 - Card orders only reach the order board once Stripe confirms the payment, through a signed webhook. If the customer doesn't pay within 35 minutes, the payment page expires and the order is cancelled. Repeated or late webhooks change nothing.
 - Cancelling an order that was paid by card refunds the payment on Stripe. If the refund fails, the order isn't cancelled.
+- Product photos go from the browser straight to Cloudinary, with a signature from the API that only admins can get. The API only accepts photo addresses from the shop's own Cloudinary folder, and Cloudinary resizes and compresses them for the menu.
 - Orders and logins are rate-limited per visitor, and the API sends standard security headers (helmet).
 
 ## Architecture
@@ -72,6 +73,7 @@ flowchart LR
     api -- Prisma --> db[(PostgreSQL on Neon)]
     user -- pays --> stripe[Stripe Checkout]
     api -- "payment page" --> stripe
+    user -- "admin uploads photo" --> cloudinary[Cloudinary]
     stripe -- webhook --> api
     github[GitHub repo] -- "push: deploy" --> vercel
     github -- "push: deploy and migrate" --> render
@@ -85,7 +87,7 @@ The browser only talks to `bageti.vercel.app`. Vercel serves the React app and f
 | Part | Tools |
 | --- | --- |
 | Client (`client/`) | React 19, TypeScript, Vite, Tailwind CSS, React Router, Zustand (cart), React Hook Form and Zod (checkout) |
-| API (`server/`) | Node 22, Express 5, TypeScript, Prisma 7, PostgreSQL, Zod (validation), jose (JWT), Stripe (card payments) |
+| API (`server/`) | Node 22, Express 5, TypeScript, Prisma 7, PostgreSQL, Zod (validation), jose (JWT), Stripe (card payments), Cloudinary (product photos) |
 | Tests | Vitest and Supertest (API), Playwright (end to end) |
 | Docs | OpenAPI 3.1 (`server/openapi.yaml`), served with Swagger UI |
 | Hosting | Vercel (client), Render (API), Neon (database), GitHub Actions (CI) |
@@ -108,6 +110,8 @@ npm run dev                          # client on :5173, API on :3001
 - **API docs:** http://localhost:5173/api/docs/
 
 **Card payments** are optional. To try them locally, add a Stripe test key (`sk_test_…`) as `STRIPE_SECRET_KEY` in `server/.env`, and forward webhooks with the [Stripe CLI](https://docs.stripe.com/stripe-cli): `stripe listen --forward-to localhost:3001/api/stripe/webhook` prints the `STRIPE_WEBHOOK_SECRET` to add. Without a key, the checkout only offers paying at pickup.
+
+**Product photos** are optional too. Add `CLOUDINARY_URL` from Cloudinary (Settings → API Keys, with your API key and secret filled in) to `server/.env`. Without it, the products page has no photo buttons and the menu shows text only.
 
 Port 3001 is the API only, so opening it in the browser shows "Cannot GET /". Stop `npm run dev` before `db:migrate` or `db:seed`, because the local database accepts only one connection at a time. The seed is safe to run again: it updates products instead of adding duplicates.
 
@@ -151,9 +155,10 @@ curl -X POST https://bageti.vercel.app/api/orders \
 
 | Part | Host | Settings |
 | --- | --- | --- |
-| API | [Render](https://render.com), free plan | `render.yaml` Blueprint. Set `DATABASE_URL` (Neon), `ADMIN_EMAIL` and `ADMIN_PASSWORD`. Render generates `JWT_SECRET`, and the demo login comes from `render.yaml`. Migrations run on each deploy. For card payments, also set `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` and `CLIENT_URL`. |
+| API | [Render](https://render.com), free plan | `render.yaml` Blueprint. Set `DATABASE_URL` (Neon), `ADMIN_EMAIL` and `ADMIN_PASSWORD`. Render generates `JWT_SECRET`, and the demo login comes from `render.yaml`. Migrations run on each deploy. For card payments, also set `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` and `CLIENT_URL`, and for product photos `CLOUDINARY_URL`. |
 | Client | [Vercel](https://vercel.com) | Root directory `client`. `client/vercel.json` forwards `/api` to Render and sends every other path to the app, so links like `/checkout` work. |
 | Payments | [Stripe](https://stripe.com), test mode | Add a webhook endpoint (Developers → Webhooks) for `https://fika-api-eqig.onrender.com/api/stripe/webhook` with the events `checkout.session.completed`, `checkout.session.async_payment_succeeded`, `checkout.session.expired` and `checkout.session.async_payment_failed`. Its signing secret is `STRIPE_WEBHOOK_SECRET`. |
+| Photos | [Cloudinary](https://cloudinary.com), free plan | Uploads go into the `fika/products` folder. |
 | Database | [Neon](https://neon.tech) | Seed the menu once with `DATABASE_URL=<production URL> npm run db:seed -w server` |
 
 ## Project structure
@@ -164,7 +169,8 @@ server/          Express API
   src/app.ts       Routes and middleware
   src/pickup.ts    Pickup time rules (Swedish time)
   src/auth.ts      Passwords, sessions and roles
-  src/stripe.ts    Stripe Checkout sessions and payment updates
+  src/stripe.ts    Stripe Checkout sessions, payment updates and refunds
+  src/cloudinary.ts  Signed photo uploads
   src/routes/      Menu, shops, orders, payments, login and admin routes
   prisma/          Database schema, migrations and seed script
   openapi.yaml     API documentation

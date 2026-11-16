@@ -427,6 +427,41 @@ paths:
         '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
 
+  /api/admin/uploads/product-image:
+    post:
+      summary: Get permission to upload a product photo
+      description: |
+        Returns a signed upload for Cloudinary. The browser posts the photo to `uploadUrl` as form data,
+        with `fields` and the photo as `file`, then saves the `secure_url` from Cloudinary's answer as
+        the product's `imageUrl`. The signature expires after an hour. Admins only.
+      tags: [Admin]
+      security:
+        - session: []
+      responses:
+        '200':
+          description: Where and how to upload
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  uploadUrl: { type: string, example: https://api.cloudinary.com/v1_1/demo/image/upload }
+                  fields:
+                    type: object
+                    properties:
+                      api_key: { type: string }
+                      timestamp: { type: string }
+                      folder: { type: string, example: fika/products }
+                      allowed_formats: { type: string, example: 'jpg,jpeg,png,webp,avif,heic' }
+                      signature: { type: string }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '503':
+          description: Photo uploads are not set up on this server
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
 components:
   securitySchemes:
     session:
@@ -490,6 +525,7 @@ components:
         priceCents: { type: integer, description: Price in öre, example: 3800 }
         available: { type: boolean, description: false when sold out }
         categoryId: { type: string, example: sweet-treats }
+        imageUrl: { type: [string, 'null'], description: The product's photo on Cloudinary, or null }
 
     ProductInput:
       type: object
@@ -500,6 +536,9 @@ components:
         priceCents: { type: integer, minimum: 1, maximum: 100000, description: Price in öre }
         categoryId: { type: string }
         available: { type: boolean }
+        imageUrl:
+          type: [string, 'null']
+          description: A photo uploaded with /api/admin/uploads/product-image, or null to remove it
 
     ProductChanges:
       type: object

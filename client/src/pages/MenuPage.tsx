@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { getJson } from '../api'
 import { useCart } from '../cart'
-import { formatPrice } from '../format'
+import { formatPrice, productImage } from '../format'
 import type { Category } from '../types'
 
 export function MenuPage() {
@@ -45,10 +45,22 @@ export function MenuPage() {
                   const inCart = cartItems.find((item) => item.productId === product.id)?.quantity ?? 0
                   return (
                     <li key={product.id} className="flex items-start justify-between gap-4">
-                      <div className={product.available ? undefined : 'opacity-60'}>
-                        <div className="font-semibold">{product.name}</div>
-                        <p className="text-sm text-taupe">{product.description}</p>
-                        <div className="text-sm tabular-nums">{formatPrice(product.priceCents)}</div>
+                      <div className={`flex items-start gap-3 ${product.available ? '' : 'opacity-60'}`}>
+                        {product.imageUrl && (
+                          <img
+                            src={productImage(product.imageUrl, 80, 80)}
+                            alt=""
+                            width={80}
+                            height={80}
+                            loading="lazy"
+                            className="size-20 shrink-0 rounded-md object-cover"
+                          />
+                        )}
+                        <div>
+                          <div className="font-semibold">{product.name}</div>
+                          <p className="text-sm text-taupe">{product.description}</p>
+                          <div className="text-sm tabular-nums">{formatPrice(product.priceCents)}</div>
+                        </div>
                       </div>
                       {product.available ? (
                         <div className="flex shrink-0 flex-col items-end gap-1">

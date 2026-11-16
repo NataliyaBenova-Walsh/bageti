@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto'
 import request from 'supertest'
 import { beforeAll, describe, expect, test } from 'vitest'
 import { app } from './app.js'
@@ -196,5 +197,44 @@ describe('admin and staff permissions', () => {
     expect(edited.body.priceCents).toBe(3900)
     await admin.patch(`/api/admin/products/${created.body.id}`).send({ priceCents: 0 }).expect(400)
     await admin.patch(`/api/admin/products/${created.body.id}`).send({ categoryId: 'nowhere' }).expect(400)
+  })
+
+  test('admins can get permission to upload a product photo, staff cannot', async () => {
+    await api.post('/api/admin/uploads/product-image').expect(401)
+    const staff = await logIn('demo@test.example', 'demo-password')
+    await staff.post('/api/admin/uploads/product-image').expect(403)
+
+    const admin = await logIn('admin@test.example', 'admin-password')
+    const { body } = await admin.post('/api/admin/uploads/product-image').expect(200)
+    expect(body.uploadUrl).toBe('https://api.cloudinary.com/v1_1/fika-test/image/upload')
+    expect(body.fields).toMatchObject({ api_key: '123456789', folder: 'fika/products' })
+    expect(body.fields).not.toHaveProperty('api_secret')
+    // Cloudinary's signature: the sorted fields, then the secret, hashed with SHA-1
+    const signed = `allowed_formats=${body.fields.allowed_formats}&folder=fika/products&timestamp=${body.fields.timestamp}`
+    expect(body.fields.signature).toBe(createHash('sha1').update(signed + 'test-api-secret').digest('hex'))
+  })
+
+  test('products can only get photos from the shop Cloudinary folder', async () => {
+    const admin = await logIn('admin@test.example', 'admin-password')
+    const product = await prisma.product.findFirstOrThrow()
+    const photo = 'https://res.cloudinary.com/fika-test/image/upload/v1763300000/fika/products/abc123.jpg'
+    const res = await admin.patch(`/api/admin/products/${product.id}`).send({ imageUrl: photo }).expect(200)
+    expect(res.body.imageUrl).toBe(photo)
+    const menu = await api.get('/api/categories').expect(200)
+    const onMenu = menu.body.flatMap((category: { products: { id: number }[] }) => category.products).find((p: { id: number }) => p.id === product.id)
+    expect(onMenu.imageUrl).toBe(photo)
+
+    for (const imageUrl of [
+      'https://evil.example/fika/products/abc.jpg',
+      'https://res.cloudinary.com/someone-else/image/upload/fika/products/abc.jpg',
+      'https://res.cloudinary.com/fika-test/image/upload/other-folder/abc.jpg',
+    ]) {
+      await admin.patch(`/api/admin/products/${product.id}`).send({ imageUrl }).expect(400)
+    }
+
+    const staff = await logIn('demo@test.example', 'demo-password')
+    await staff.patch(`/api/admin/products/${product.id}`).send({ imageUrl: null }).expect(403)
+    await admin.patch(`/api/admin/products/${product.id}`).send({ imageUrl: null }).expect(200)
+    expect((await prisma.product.findUniqueOrThrow({ where: { id: product.id } })).imageUrl).toBeNull()
   })
 })

@@ -24,6 +24,8 @@ export default defineConfig({
       STRIPE_SECRET_KEY: 'sk_test_not_used',
       STRIPE_WEBHOOK_SECRET: 'whsec_test_secret',
       CLIENT_URL: 'http://shop.test',
+      // Turns photo uploads on. Tests never call Cloudinary.
+      CLOUDINARY_URL: 'cloudinary://123456789:test-api-secret@fika-test',
     },
   },
 })

@@ -7,6 +7,8 @@ export type Product = {
   priceCents: number
   available: boolean
   categoryId: string
+  // A photo on Cloudinary, or null
+  imageUrl: string | null
 }
 
 export type Category = { id: string; name: string; products: Product[] }

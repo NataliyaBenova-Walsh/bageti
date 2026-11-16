@@ -10,6 +10,7 @@ const productFields = {
   priceCents: true,
   available: true,
   categoryId: true,
+  imageUrl: true,
 } as const
 
 // The whole menu: categories in display order, each with its products

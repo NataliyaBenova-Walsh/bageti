@@ -20,6 +20,8 @@ model Product {
   description String
   priceCents  Int
   available   Boolean     @default(true)
+  // A photo on Cloudinary (see src/cloudinary.ts), or none
+  imageUrl    String?
   sortOrder   Int         @default(0)
   category    Category    @relation(fields: [categoryId], references: [id])
   categoryId  String

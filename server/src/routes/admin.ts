@@ -1,6 +1,7 @@
 import { Router } from 'express'
 import { z } from 'zod'
 import { requireRole } from '../auth.js'
+import { cloudinary, isProductImageUrl, signProductUpload } from '../cloudinary.js'
 import { prisma } from '../db.js'
 import type { OrderStatus, Prisma } from '../generated/prisma/client.js'
 import { shopDayRange, shopToday } from '../pickup.js'
@@ -101,6 +102,13 @@ const productInput = z.object({
   priceCents: z.number().int().min(1, 'Price must be more than 0').max(100000),
   categoryId: z.string().min(1, 'Please choose a category'),
   available: z.boolean(),
+  // A photo uploaded with the signature from /admin/uploads/product-image, or null for none
+  imageUrl: z
+    .string()
+    .max(500)
+    .refine(isProductImageUrl, 'Please upload the photo from the products page')
+    .nullable()
+    .optional(),
 })
 
 function validationError(error: z.ZodError) {
@@ -151,4 +159,14 @@ adminRouter.patch('/admin/products/:id', staffOrAdmin, async (req, res) => {
   }
   const product = await prisma.product.update({ where: { id }, data })
   res.json(product)
+})
+
+// Permission for the browser to upload one product photo straight to Cloudinary. Admins only,
+// like the other product details, so the public demo login can't upload.
+adminRouter.post('/admin/uploads/product-image', adminOnly, (_req, res) => {
+  if (!cloudinary) {
+    res.status(503).json({ error: 'Photo uploads are not set up' })
+    return
+  }
+  res.json(signProductUpload())
 })

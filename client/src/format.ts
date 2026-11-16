@@ -25,4 +25,10 @@ export const formatPickup = (iso: string) => `${longDateFormat.format(new Date(i
 // Today's date in Sweden, "YYYY-MM-DD"
 export const shopToday = () => isoDateFormat.format(new Date())
 
+// A Cloudinary photo cropped to this size, in the best format and quality for the browser.
+// The size is doubled for sharp images on high-density screens.
+export function productImage(url: string, width: number, height: number): string {
+  return url.replace('/image/upload/', `/image/upload/c_fill,g_auto,w_${width * 2},h_${height * 2},f_auto,q_auto/`)
+}
+
 export const formatDate = (iso: string) => longDateFormat.format(new Date(iso))

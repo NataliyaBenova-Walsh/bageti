@@ -33,6 +33,9 @@ services:
         sync: false
       - key: CLIENT_URL
         sync: false
+      # Product photos: cloudinary://<api key>:<api secret>@<cloud name>
+      - key: CLOUDINARY_URL
+        sync: false
       # The public demo login shown in the README (staff role: orders and sold-out only)
       - key: DEMO_EMAIL
         value: demo@example.com
