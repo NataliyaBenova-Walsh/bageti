@@ -42,6 +42,9 @@ export function AdminLayout() {
           <NavLink to="/admin/products" className={navClass}>
             Products
           </NavLink>
+          <NavLink to="/admin/sales" className={navClass}>
+            Sales
+          </NavLink>
           <span className="px-2 text-sm text-taupe">{user.name}</span>
           <button type="button" onClick={logOut} className="px-3 py-2 text-sm text-med-brown underline">
             Log out

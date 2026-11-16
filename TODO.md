@@ -53,5 +53,5 @@ The React + Tailwind client in phase 3 will replace this site, so do the items t
 6. [ ] **Realtime and extras:** live order feed for staff (WebSockets or SSE), confirmation email, sales dashboard (Recharts)
    - [x] **Live order feed:** server-sent events tell open order boards when an order is placed, paid or changes status, and the board falls back to a 30-second refresh while the feed is down
    - [ ] **Confirmation email**
-   - [ ] **Sales dashboard**
+   - [x] **Sales dashboard:** last 7/30/90 days per shop, against the period before; sales per day, by shop and best sellers, with table views (built in plain HTML and CSS rather than Recharts)
 7. [x] **Quality:** Vitest API tests, a Playwright end-to-end test for the order flow, OpenAPI docs, a README with an architecture diagram and a demo admin login (Done: Vitest and Supertest API tests on a separate test database, a Playwright test from order to staff, OpenAPI docs at /api/docs with a test that keeps them in sync with the routes, CI with a Postgres service, and a README with an architecture diagram, screenshots and a public demo login with a new staff role.)

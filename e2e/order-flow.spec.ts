@@ -71,4 +71,11 @@ test('a customer orders, and staff start preparing the order', async ({ page, br
   await staff.getByRole('link', { name: 'Products' }).click()
   await expect(staff.getByRole('heading', { name: 'Products' })).toBeVisible()
   await expect(staff.getByRole('button', { name: 'Edit' })).toHaveCount(0)
+
+  // The sales dashboard loads, with its headline figures
+  await staff.getByRole('link', { name: 'Sales' }).click()
+  await expect(staff.getByRole('heading', { name: 'Sales', exact: true })).toBeVisible()
+  await expect(staff.getByRole('heading', { name: 'Average order' })).toBeVisible()
+  await staff.getByRole('button', { name: 'Last 90 days' }).click()
+  await expect(staff.getByRole('button', { name: 'Last 90 days' })).toHaveAttribute('aria-pressed', 'true')
 })

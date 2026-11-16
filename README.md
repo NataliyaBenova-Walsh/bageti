@@ -45,6 +45,7 @@ The demo login has the **staff** role: it can see all orders, move them through 
 **Staff and admins**
 
 - **Order board:** one day's pickups, filtered by shop and status. New orders and changes appear at once through a live feed (server-sent events); if the feed drops, the board refreshes every 30 seconds until it's back. Orders move New → Preparing → Ready → Picked up, one step at a time, and can be cancelled until they're picked up.
+- **Sales:** takings, number of orders and average order for the last 7, 30 or 90 days, compared with the period before; sales per day, per shop and the best-selling products, each with a table view. Charts are plain HTML and CSS, with tooltips on hover and keyboard focus.
 - **Products:** mark products sold out or back in stock. Admins can also add products, change their name, description, price and category, and upload photos.
 
 **Rules the server enforces**
@@ -115,6 +116,8 @@ npm run dev                          # client on :5173, API on :3001
 
 Port 3001 is the API only, so opening it in the browser shows "Cannot GET /". Stop `npm run dev` before `db:migrate` or `db:seed`, because the local database accepts only one connection at a time. The seed is safe to run again: it updates products instead of adding duplicates.
 
+To fill the sales dashboard, `npm run db:seed-demo-orders -w server` adds about 1,250 made-up orders over the last 90 days (codes starting with `DM-`). Running it again replaces them, and `-- --remove` deletes them.
+
 ## Tests
 
 ```bash
@@ -122,7 +125,7 @@ npm run db:test -w server   # start the test database once, and put its URL in T
 npm test                    # API tests, then the end-to-end test
 ```
 
-- **API tests** (`server/src/*.test.ts`, Vitest and Supertest): the menu, pickup times across clock changes, placing orders (pricing, validation, sold-out items), card payments and refunds (Stripe calls replaced, webhooks signed with a test secret), the live order feed, login, and what staff and admins may do. They empty and refill the test database first, and refuse to run against anything but a local database.
+- **API tests** (`server/src/*.test.ts`, Vitest and Supertest): the menu, pickup times across clock changes, placing orders (pricing, validation, sold-out items), card payments and refunds (Stripe calls replaced, webhooks signed with a test secret), the live order feed, sales figures (Swedish days, what counts as a sale, the comparison period), login, and what staff and admins may do. They empty and refill the test database first, and refuse to run against anything but a local database.
 - **Documentation test:** checks that every route in the code is in `openapi.yaml`, and that every documented route exists.
 - **End-to-end test** (`e2e/`, Playwright): a customer orders in a real browser, then a staff member logs in, finds the order and starts preparing it, then a new order appears on the open board through the live feed. It runs its own API and client on ports 3101 and 5174, so it doesn't disturb `npm run dev`.
 

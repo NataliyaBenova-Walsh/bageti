@@ -451,6 +451,71 @@ paths:
         '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
 
+  /api/admin/sales:
+    get:
+      summary: Sales figures for a date range
+      description: |
+        Sales between two Swedish pickup dates (both included): totals, the same number of days just
+        before for comparison, every day in the range, each shop, and the best-selling products.
+        Orders count once placed, except cancelled ones and card orders still waiting for payment.
+        Up to 366 days. Staff and admins.
+      tags: [Admin]
+      security:
+        - session: []
+      parameters:
+        - { name: from, in: query, required: true, schema: { type: string, format: date }, example: '2026-10-01' }
+        - { name: to, in: query, required: true, schema: { type: string, format: date }, example: '2026-10-30' }
+        - { name: location, in: query, description: One shop only, schema: { type: string }, example: riverside }
+      responses:
+        '200':
+          description: The figures. Amounts are in öre.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  from: { type: string, format: date }
+                  to: { type: string, format: date }
+                  totals: { $ref: '#/components/schemas/SalesTotals' }
+                  previous:
+                    allOf:
+                      - $ref: '#/components/schemas/SalesTotals'
+                      - type: object
+                        properties:
+                          from: { type: string, format: date }
+                          to: { type: string, format: date }
+                  byDay:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        date: { type: string, format: date }
+                        revenueCents: { type: integer }
+                        orders: { type: integer }
+                  byLocation:
+                    type: array
+                    description: Highest sales first
+                    items:
+                      type: object
+                      properties:
+                        id: { type: string }
+                        name: { type: string }
+                        revenueCents: { type: integer }
+                        orders: { type: integer }
+                  topProducts:
+                    type: array
+                    description: Up to 8, highest sales first
+                    items:
+                      type: object
+                      properties:
+                        productId: { type: integer }
+                        name: { type: string }
+                        quantity: { type: integer }
+                        revenueCents: { type: integer }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
   /api/admin/uploads/product-image:
     post:
       summary: Get permission to upload a product photo
@@ -550,6 +615,13 @@ components:
         available: { type: boolean, description: false when sold out }
         categoryId: { type: string, example: sweet-treats }
         imageUrl: { type: [string, 'null'], description: The product's photo on Cloudinary, or null }
+
+    SalesTotals:
+      type: object
+      properties:
+        revenueCents: { type: integer, description: Sales in öre }
+        orders: { type: integer }
+        averageCents: { type: integer, description: Average order in öre }
 
     ProductInput:
       type: object

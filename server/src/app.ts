@@ -11,6 +11,7 @@ import { authRouter } from './routes/auth.js'
 import { locationsRouter } from './routes/locations.js'
 import { menuRouter } from './routes/menu.js'
 import { ordersRouter } from './routes/orders.js'
+import { salesRouter } from './routes/sales.js'
 import { stripeWebhook } from './routes/stripe-webhook.js'
 
 // The Express app, without starting it, so tests can send requests to it directly
@@ -55,6 +56,7 @@ app.use('/api', locationsRouter)
 app.use('/api', ordersRouter)
 app.use('/api', authRouter)
 app.use('/api', adminRouter)
+app.use('/api', salesRouter)
 
 // Errors thrown in routes: log them, and answer in JSON instead of Express's HTML page
 const errorHandler: ErrorRequestHandler = (error, _req, res, _next) => {

@@ -3,6 +3,7 @@ import { AdminLayout } from './admin/AdminLayout'
 import { LoginPage } from './admin/LoginPage'
 import { OrdersPage } from './admin/OrdersPage'
 import { ProductsPage } from './admin/ProductsPage'
+import { SalesPage } from './admin/SalesPage'
 import { Layout } from './components/Layout'
 import { CheckoutPage } from './pages/CheckoutPage'
 import { ConfirmationPage } from './pages/ConfirmationPage'
@@ -24,6 +25,7 @@ const router = createBrowserRouter([
     children: [
       { index: true, element: <OrdersPage /> },
       { path: 'products', element: <ProductsPage /> },
+      { path: 'sales', element: <SalesPage /> },
     ],
   },
 ])
