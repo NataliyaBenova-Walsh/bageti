@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs'
 import cookieParser from 'cookie-parser'
 import cors from 'cors'
 import express, { type ErrorRequestHandler } from 'express'
+import helmet from 'helmet'
 import swaggerUi from 'swagger-ui-express'
 import { parse } from 'yaml'
 import { prisma } from './db.js'
@@ -18,6 +19,9 @@ export const app = express()
 // Requests come through two proxies: Vercel (which forwards /api to Render) and Render's own.
 // Trusting both lets rate limiting see the visitor's real IP and req.secure see HTTPS.
 app.set('trust proxy', 2)
+
+// Standard security headers (no sniffing, no framing, a strict content security policy, …)
+app.use(helmet())
 
 // The client is served from another domain in production (Vercel), so allow it.
 // CLIENT_ORIGIN can list several origins separated by commas.
