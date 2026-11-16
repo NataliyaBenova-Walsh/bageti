@@ -14,6 +14,7 @@ const WEBHOOK_SECRET = 'whsec_test_secret'
 let sessionCount = 0
 const createSession = vi.spyOn(stripe!.checkout.sessions, 'create')
 const retrieveSession = vi.spyOn(stripe!.checkout.sessions, 'retrieve')
+const createRefund = vi.spyOn(stripe!.refunds, 'create')
 
 beforeAll(async () => {
   await ensureAccounts()
@@ -22,6 +23,7 @@ beforeAll(async () => {
 afterEach(() => {
   createSession.mockReset()
   retrieveSession.mockReset()
+  createRefund.mockReset()
 })
 
 // Places a card order for 2 cinnamon buns and returns the response and the Stripe session id
@@ -55,9 +57,14 @@ async function orderFor(sessionId: string) {
   return prisma.order.findUniqueOrThrow({ where: { stripeSessionId: sessionId } })
 }
 
-async function boardCodes(date: string) {
+async function loginAdmin() {
   const admin = request.agent(app)
   await admin.post('/api/auth/login').send({ email: 'admin@test.example', password: 'admin-password' }).expect(200)
+  return admin
+}
+
+async function boardCodes(date: string) {
+  const admin = await loginAdmin()
   const res = await admin.get(`/api/admin/orders?date=${date}`).expect(200)
   return res.body.map((order: { code: string }) => order.code)
 }
@@ -139,5 +146,58 @@ describe('card payments', () => {
       })
       .expect(502)
     expect(await prisma.order.count()).toBe(before)
+  })
+})
+
+describe('cancelling a paid order', () => {
+  async function placePaidOrder() {
+    const { sessionId } = await placeCardOrder()
+    await sendWebhook('checkout.session.completed', { id: sessionId, payment_status: 'paid' }).expect(200)
+    retrieveSession.mockResolvedValue({ id: sessionId, payment_intent: `pi_for_${sessionId}` } as never)
+    return orderFor(sessionId)
+  }
+
+  test('refunds the card payment on Stripe', async () => {
+    const order = await placePaidOrder()
+    createRefund.mockResolvedValue({ id: 're_test' } as never)
+    const admin = await loginAdmin()
+    const res = await admin.patch(`/api/admin/orders/${order.id}`).send({ status: 'CANCELLED' }).expect(200)
+    expect(res.body).toEqual({ id: order.id, status: 'CANCELLED', paymentStatus: 'REFUNDED' })
+    expect(createRefund).toHaveBeenCalledWith(
+      { payment_intent: `pi_for_${order.stripeSessionId}` },
+      { idempotencyKey: `refund-order-${order.id}` },
+    )
+    expect(await orderFor(order.stripeSessionId!)).toMatchObject({ status: 'CANCELLED', paymentStatus: 'REFUNDED' })
+  })
+
+  test('keeps the order if the refund fails', async () => {
+    const order = await placePaidOrder()
+    const admin = await loginAdmin()
+    await admin.patch(`/api/admin/orders/${order.id}`).send({ status: 'PREPARING' }).expect(200)
+    createRefund.mockRejectedValue(new Error('Stripe is down'))
+    vi.spyOn(console, 'error').mockImplementationOnce(() => {})
+    await admin.patch(`/api/admin/orders/${order.id}`).send({ status: 'CANCELLED' }).expect(502)
+    expect(await orderFor(order.stripeSessionId!)).toMatchObject({ status: 'PREPARING', paymentStatus: 'PAID' })
+  })
+
+  test('orders paid at pickup are cancelled without calling Stripe', async () => {
+    const slots = await api.get('/api/locations/old-town/pickup-slots').expect(200)
+    const bun = await prisma.product.findFirstOrThrow({ where: { name: 'Cinnamon Bun' } })
+    const placed = await api
+      .post('/api/orders')
+      .send({
+        customerName: 'Counter Customer',
+        email: 'counter@example.com',
+        phone: '+46 70 174 06 05',
+        locationId: 'old-town',
+        pickupAt: slots.body[0].slots[0],
+        items: [{ productId: bun.id, quantity: 1 }],
+      })
+      .expect(201)
+    const order = await prisma.order.findUniqueOrThrow({ where: { code: placed.body.code } })
+    const admin = await loginAdmin()
+    const res = await admin.patch(`/api/admin/orders/${order.id}`).send({ status: 'CANCELLED' }).expect(200)
+    expect(res.body.paymentStatus).toBe('PAY_AT_PICKUP')
+    expect(createRefund).not.toHaveBeenCalled()
   })
 })

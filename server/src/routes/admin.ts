@@ -4,6 +4,7 @@ import { requireRole } from '../auth.js'
 import { prisma } from '../db.js'
 import type { OrderStatus, Prisma } from '../generated/prisma/client.js'
 import { shopDayRange, shopToday } from '../pickup.js'
+import { refundOrder, stripe } from '../stripe.js'
 
 export const adminRouter = Router()
 
@@ -74,7 +75,24 @@ adminRouter.patch('/admin/orders/:id', staffOrAdmin, async (req, res) => {
     res.status(409).json({ error: 'This order was just changed by someone else. Please refresh.' })
     return
   }
-  res.json({ id, status: next })
+
+  // Cancelling an order paid by card gives the money back. The order is claimed as cancelled first,
+  // so two staff screens can't both refund it; if Stripe fails, it goes back to its earlier step.
+  if (next === 'CANCELLED' && order.paymentStatus === 'PAID' && order.stripeSessionId) {
+    try {
+      if (!stripe) throw new Error('STRIPE_SECRET_KEY is not set')
+      await refundOrder({ id, stripeSessionId: order.stripeSessionId })
+    } catch (error) {
+      console.error(error)
+      await prisma.order.updateMany({ where: { id, status: 'CANCELLED' }, data: { status: order.status } })
+      res.status(502).json({ error: "The card payment couldn't be refunded, so the order wasn't cancelled. Please try again." })
+      return
+    }
+    await prisma.order.update({ where: { id }, data: { paymentStatus: 'REFUNDED' } })
+    res.json({ id, status: next, paymentStatus: 'REFUNDED' })
+    return
+  }
+  res.json({ id, status: next, paymentStatus: order.paymentStatus })
 })
 
 const productInput = z.object({

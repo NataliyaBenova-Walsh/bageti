@@ -9,6 +9,7 @@ const PAYMENT_LABEL: Record<PaymentStatus, string> = {
   PAID: 'Paid',
   AWAITING_PAYMENT: 'Waiting for the payment to be confirmed',
   PAY_AT_PICKUP: 'Pay when you collect',
+  REFUNDED: 'Refunded',
 }
 
 // After paying on Stripe, the customer comes back with the session id; fetch the order with it.

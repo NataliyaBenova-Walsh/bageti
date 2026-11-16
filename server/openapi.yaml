@@ -331,7 +331,8 @@ paths:
       summary: Change an order's status
       description: |
         Orders move one step at a time, NEW → PREPARING → READY → PICKED_UP, and can be CANCELLED until
-        they're picked up. Staff and admins.
+        they're picked up. Cancelling an order that was paid by card refunds the payment on Stripe.
+        Staff and admins.
       tags: [Admin]
       security:
         - session: []
@@ -359,12 +360,18 @@ paths:
                 properties:
                   id: { type: integer }
                   status: { $ref: '#/components/schemas/OrderStatus' }
+                  paymentStatus: { $ref: '#/components/schemas/PaymentStatus' }
         '400': { $ref: '#/components/responses/BadRequest' }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
         '409':
           description: Not the next step, or the order was just changed by someone else
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '502':
+          description: A paid order couldn't be refunded on Stripe, so it wasn't cancelled
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Error' }
@@ -523,8 +530,10 @@ components:
 
     PaymentStatus:
       type: string
-      enum: [PAY_AT_PICKUP, AWAITING_PAYMENT, PAID]
-      description: AWAITING_PAYMENT is a card order whose payment isn't finished
+      enum: [PAY_AT_PICKUP, AWAITING_PAYMENT, PAID, REFUNDED]
+      description: |
+        AWAITING_PAYMENT is a card order whose payment isn't finished. REFUNDED is a card order that
+        staff cancelled after it was paid.
 
     NewOrder:
       type: object

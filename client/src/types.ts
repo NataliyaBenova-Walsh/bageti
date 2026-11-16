@@ -16,8 +16,9 @@ export type Location = { id: string; name: string; address: string; opensAt: str
 // Pickup times for one Swedish date, as UTC ISO strings
 export type PickupDay = { date: string; slots: string[] }
 
-// AWAITING_PAYMENT: a card order whose payment on Stripe isn't finished
-export type PaymentStatus = 'PAY_AT_PICKUP' | 'AWAITING_PAYMENT' | 'PAID'
+// AWAITING_PAYMENT: a card order whose payment on Stripe isn't finished.
+// REFUNDED: a paid card order that staff cancelled, with the money given back.
+export type PaymentStatus = 'PAY_AT_PICKUP' | 'AWAITING_PAYMENT' | 'PAID' | 'REFUNDED'
 
 export type OrderConfirmation = {
   code: string

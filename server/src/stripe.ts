@@ -43,6 +43,15 @@ export function markPaid(sessionId: string) {
   })
 }
 
+// Gives the customer their money back for a paid card order. The idempotency key makes
+// Stripe ignore a second refund for the same order, e.g. if staff retry after an error.
+export async function refundOrder(order: { id: number; stripeSessionId: string }) {
+  const session = await stripe!.checkout.sessions.retrieve(order.stripeSessionId)
+  const paymentIntent = typeof session.payment_intent === 'string' ? session.payment_intent : session.payment_intent?.id
+  if (!paymentIntent) throw new Error(`Checkout session ${order.stripeSessionId} has no payment to refund`)
+  return stripe!.refunds.create({ payment_intent: paymentIntent }, { idempotencyKey: `refund-order-${order.id}` })
+}
+
 export function cancelUnpaid(sessionId: string) {
   return prisma.order.updateMany({
     where: { stripeSessionId: sessionId, paymentStatus: 'AWAITING_PAYMENT', status: 'NEW' },

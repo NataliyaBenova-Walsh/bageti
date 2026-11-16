@@ -54,7 +54,8 @@ The demo login has the **staff** role: it can see all orders, move them through 
 - Orders with sold-out products are refused, and the checkout removes those products from the cart.
 - Logins use scrypt password hashes and a signed JWT in an httpOnly cookie. Wrong emails and wrong passwords get the same answer.
 - Card orders only reach the order board once Stripe confirms the payment, through a signed webhook. If the customer doesn't pay within 35 minutes, the payment page expires and the order is cancelled. Repeated or late webhooks change nothing.
-- Orders and logins are rate-limited per visitor.
+- Cancelling an order that was paid by card refunds the payment on Stripe. If the refund fails, the order isn't cancelled.
+- Orders and logins are rate-limited per visitor, and the API sends standard security headers (helmet).
 
 ## Architecture
 
@@ -117,7 +118,7 @@ npm run db:test -w server   # start the test database once, and put its URL in T
 npm test                    # API tests, then the end-to-end test
 ```
 
-- **API tests** (`server/src/*.test.ts`, Vitest and Supertest): the menu, pickup times across clock changes, placing orders (pricing, validation, sold-out items), card payments (Stripe calls replaced, webhooks signed with a test secret), login, and what staff and admins may do. They empty and refill the test database first, and refuse to run against anything but a local database.
+- **API tests** (`server/src/*.test.ts`, Vitest and Supertest): the menu, pickup times across clock changes, placing orders (pricing, validation, sold-out items), card payments and refunds (Stripe calls replaced, webhooks signed with a test secret), login, and what staff and admins may do. They empty and refill the test database first, and refuse to run against anything but a local database.
 - **Documentation test:** checks that every route in the code is in `openapi.yaml`, and that every documented route exists.
 - **End-to-end test** (`e2e/`, Playwright): a customer orders in a real browser, then a staff member logs in, finds the order and starts preparing it. It runs its own API and client on ports 3101 and 5174, so it doesn't disturb `npm run dev`.
 

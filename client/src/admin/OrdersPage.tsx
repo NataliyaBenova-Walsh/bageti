@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { ApiError, getJson, patchJson } from '../api'
 import { formatDate, formatPrice, formatTime, shopToday } from '../format'
-import type { AdminOrder, Location, OrderStatus } from '../types'
+import type { AdminOrder, Location, OrderStatus, PaymentStatus } from '../types'
 
 const STATUS_LABEL: Record<OrderStatus, string> = {
   NEW: 'New',
@@ -24,6 +24,13 @@ const NEXT_STEP: Partial<Record<OrderStatus, { status: OrderStatus; label: strin
   NEW: { status: 'PREPARING', label: 'Start preparing' },
   PREPARING: { status: 'READY', label: 'Mark ready' },
   READY: { status: 'PICKED_UP', label: 'Picked up' },
+}
+
+const PAYMENT_LABEL: Record<PaymentStatus, string> = {
+  PAY_AT_PICKUP: 'Pay at pickup',
+  AWAITING_PAYMENT: 'Waiting for payment',
+  PAID: 'Paid',
+  REFUNDED: 'Refunded',
 }
 
 const FILTERS: (OrderStatus | 'ALL')[] = ['ALL', 'NEW', 'PREPARING', 'READY', 'PICKED_UP', 'CANCELLED']
@@ -71,11 +78,14 @@ export function OrdersPage() {
   }, [load])
 
   async function changeStatus(order: AdminOrder, status: OrderStatus) {
-    if (status === 'CANCELLED' && !window.confirm(`Cancel order ${order.code} for ${order.customerName}?`)) return
+    if (status === 'CANCELLED') {
+      const refund = order.paymentStatus === 'PAID' ? ` The card payment of ${formatPrice(order.totalCents)} will be refunded.` : ''
+      if (!window.confirm(`Cancel order ${order.code} for ${order.customerName}?${refund}`)) return
+    }
     setBusyId(order.id)
     try {
-      await patchJson(`/api/admin/orders/${order.id}`, { status })
-      setOrders((current) => current?.map((o) => (o.id === order.id ? { ...o, status } : o)) ?? null)
+      const updated = await patchJson<{ status: OrderStatus; paymentStatus: PaymentStatus }>(`/api/admin/orders/${order.id}`, { status })
+      setOrders((current) => current?.map((o) => (o.id === order.id ? { ...o, ...updated } : o)) ?? null)
     } catch (err) {
       setError(err instanceof ApiError && err.body.error ? err.body.error : "The order couldn't be updated.")
       await load()
@@ -189,7 +199,7 @@ export function OrdersPage() {
                 ))}
               </ul>
               <div className="mb-3 flex justify-between border-t border-beige pt-1 text-sm font-semibold">
-                <span>{order.paymentStatus === 'PAID' ? 'Paid' : 'Pay at pickup'}</span>
+                <span>{PAYMENT_LABEL[order.paymentStatus]}</span>
                 <span className="tabular-nums">{formatPrice(order.totalCents)}</span>
               </div>
               {order.note && <p className="mb-3 rounded bg-cream p-2 text-sm italic">“{order.note}”</p>}

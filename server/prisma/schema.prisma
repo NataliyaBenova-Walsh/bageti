@@ -54,6 +54,8 @@ enum PaymentStatus {
   // Card chosen, and the customer hasn't finished paying on Stripe yet
   AWAITING_PAYMENT
   PAID
+  // Paid by card, then cancelled by staff: the payment was refunded on Stripe
+  REFUNDED
 }
 
 model Order {
